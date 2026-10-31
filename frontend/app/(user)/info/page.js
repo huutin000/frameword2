@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function Info() {
   const [user, setUser] = useState({});
@@ -7,46 +8,52 @@ export default function Info() {
 
   useEffect(() => {
     const getUser = async () => {
-      // Kiểm tra nếu đang chạy trên client
-      if (typeof window !== "undefined") {
-        // Lấy token từ cookie ở máy tính
-        const token = document.cookie.split(";").find((c) => c.trim().startsWith("token="));
-        const tokenValue = token?.split("=")[1];
+      try {
+        const supabase = createClient();
+        const {
+          data: { user: authUser },
+          error,
+        } = await supabase.auth.getUser();
 
-        if (!tokenValue) {
-          window.location.href = "../login/dangnhap";
+        if (error || !authUser) {
+          window.location.href = "/login";
           return;
         }
 
-        try {
-          const res = await fetch("http://localhost:3000/user/detailuser", {
-            headers: {
-              Authorization: `Bearer ${tokenValue}`,
-            },
-          });
-          if (!res.ok) {
-            throw new Error("Failed to fetch user data");
-          }
-          const data = await res.json();
-          setUser(data);
-        } catch (error) {
-          console.error("Error fetching user details:", error);
-          // Handle errors here if needed
-        } finally {
-          setLoading(false);
-        }
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", authUser.id)
+          .single();
+
+        setUser({
+          email: authUser.email,
+          name: profile?.name || authUser.user_metadata?.name || "Chưa cập nhật",
+          role: profile?.role || "user",
+        });
+      } catch (error) {
+        console.error("Lỗi lấy thông tin người dùng:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     getUser();
   }, []);
 
-  if (loading) return <p>Loading...</p>;
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    document.cookie = "token=; path=/; max-age=0";
+    window.location.href = "/login";
+  };
+
+  if (loading) return <div className="container py-4"><p>Đang tải thông tin...</p></div>;
 
   return (
-    <div className="container">
+    <div className="container py-4">
       <h2>Thông tin cá nhân</h2>
-      <div>
+      <div className="card p-3 my-3">
         <p>
           <strong>Email:</strong> {user.email}
         </p>
@@ -54,19 +61,10 @@ export default function Info() {
           <strong>Tên:</strong> {user.name}
         </p>
         <p>
-          <strong>Địa chỉ:</strong> {user.address}
+          <strong>Vai trò:</strong> {user.role === "admin" ? "Quản trị viên" : "Khách hàng"}
         </p>
       </div>
-      {/* nút đăng xuất */}
-      <button
-        className="btn btn-danger"
-        onClick={() => {
-          if (typeof window !== "undefined") {
-            document.cookie = "token=; path=/; max-age=0";
-            window.location.href = "/login/dangnhap";
-          }
-        }}
-      >
+      <button className="btn btn-danger" onClick={handleLogout}>
         Đăng xuất
       </button>
     </div>

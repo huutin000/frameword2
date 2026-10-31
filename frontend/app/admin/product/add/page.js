@@ -1,80 +1,103 @@
 "use client";
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 export default function ProductAdd() {
   const router = useRouter();
   const [categories, setCategories] = useState([]);
-  const message = useRef("");
-  const error = useRef("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const getCategories = async () => {
-      const res = await fetch("http://localhost:3000/category");
-      const data = await res.json();
-      setCategories(data);
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase.from("categories").select("*");
+        if (error) throw error;
+        setCategories(data || []);
+      } catch (err) {
+        console.error("Lỗi lấy danh mục:", err);
+      }
     };
     getCategories();
   }, []);
 
   const handleSubmit = async (values) => {
-    const data = new FormData();
-    data.append("name", values.name);
-    data.append("price", values.price);
-    data.append("del", values.saleprice);
-    data.append("quantity", values.quantity);
-    data.append("description", values.description);
-    data.append("category[categoryId]", values.category);
-    data.append("category[categoryName]", categories.find((cate) => cate._id === values.category)?.name);
-    data.append("image", values.image);
-
     try {
-      const res = await fetch("http://localhost:3000/product/addProduct", {
-        method: "POST",
-        body: data,
-      });
-      const result = await res.json();
-      if (result.error) {
-        error.current = result.error;
-      } else {
-        message.current = result.message;
-        router.push("/admin/product");
+      const supabase = createClient();
+      let imageUrl = "";
+
+      // 1. Upload ảnh lên Supabase Storage bucket 'products'
+      if (values.image && values.image.name) {
+        const fileExt = values.image.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("products")
+          .upload(fileName, values.image, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error("Lỗi upload ảnh:", uploadError);
+          throw new Error("Lỗi tải ảnh lên Storage: " + uploadError.message);
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from("products")
+          .getPublicUrl(fileName);
+
+        imageUrl = publicUrlData.publicUrl;
       }
+
+      // 2. Thêm record vào bảng products
+      const { error: insertError } = await supabase.from("products").insert([
+        {
+          name: values.name,
+          price: Number(values.price),
+          del: Number(values.saleprice) || 0,
+          quantity: Number(values.quantity) || 1,
+          description: values.description,
+          category_id: values.category || null,
+          image: imageUrl || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500",
+        },
+      ]);
+
+      if (insertError) throw insertError;
+
+      setSuccessMessage("Thêm sản phẩm thành công!");
+      router.push("/admin/product");
     } catch (err) {
-      error.current = "Có lỗi xảy ra. Vui lòng thử lại.";
+      setErrorMessage(err.message || "Có lỗi xảy ra. Vui lòng thử lại.");
     }
   };
 
-  // form validation schema
   const validationSchema = Yup.object({
     name: Yup.string()
-      .required("Name là bắt buộc")
-      .matches(/^[a-zA-ZÀ-ỹ\s]*$/, "Name không hợp lệ"),
+      .required("Tên sản phẩm là bắt buộc")
+      .matches(/^[a-zA-ZÀ-ỹ0-9\s.,+_-]*$/, "Tên sản phẩm không hợp lệ"),
     description: Yup.string()
-      .min(10, "Description phải có ít nhất 10 ký tự")
-      .required("Description là bắt buộc")
-      .matches(/^[a-zA-ZÀ-ỹ\d\s]*$/, "Description không hợp lệ"),
-    quantity: Yup.number().required("Quantity là bắt buộc").min(1, "Quantity không hợp lệ"),
-    price: Yup.number().required("Price là bắt buộc").min(0, "Price không hợp lệ"),
-    saleprice: Yup.number().required("SalePrice là bắt buộc").min(0, "SalePrice không hợp lệ"),
-    image: Yup.mixed()
-      .required("Image là bắt buộc")
-      .test("image-validation", "Image không hợp lệ", (value) => {
-        return value && /\.(jpeg|jpg|gif|png|bmp|svg)$/.test(value.name);
-      }),
-    category: Yup.string().required("Category là bắt buộc"),
+      .min(5, "Mô tả phải có ít nhất 5 ký tự")
+      .required("Mô tả là bắt buộc"),
+    quantity: Yup.number().required("Số lượng là bắt buộc").min(0, "Số lượng không hợp lệ"),
+    price: Yup.number().required("Giá là bắt buộc").min(0, "Giá không hợp lệ"),
+    saleprice: Yup.number().min(0, "Giá khuyến mãi không hợp lệ"),
+    image: Yup.mixed().required("Hình ảnh là bắt buộc"),
+    category: Yup.string().required("Danh mục là bắt buộc"),
   });
 
   const formik = useFormik({
     initialValues: {
       name: "",
       description: "",
-      quantity: "",
+      quantity: 1,
       price: "",
-      saleprice: "",
+      saleprice: 0,
       image: null,
       category: "",
     },
@@ -87,23 +110,23 @@ export default function ProductAdd() {
   return (
     <>
       <div className="d-flex justify-content-between">
-        <h3 className="mb-4">Add Product</h3>
+        <h3 className="mb-4">Thêm sản phẩm</h3>
         <div>
           <Link href="/admin/product" className="btn btn-outline-secondary rounded-0">
-            <i className="far fa-long-arrow-left"></i> Back
+            <i className="far fa-long-arrow-left"></i> Quay lại
           </Link>
         </div>
       </div>
-      {error.current && <div className="alert alert-danger">{error.current}</div>}
-      {message.current && <div className="alert alert-success">{message.current}</div>}
-      <form className="row" onSubmit={formik.handleSubmit} method="POST" encType="multipart/form-data">
+      {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+      {successMessage && <div className="alert alert-success">{successMessage}</div>}
+      <form className="row" onSubmit={formik.handleSubmit}>
         <div className="col-md-8 mb-4">
           <div className="card rounded-0 border-0 shadow-sm mb-4">
             <div className="card-body">
-              <h6 className="pb-3 border-bottom">Basic Info</h6>
+              <h6 className="pb-3 border-bottom">Thông tin cơ bản</h6>
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">
-                  Name *
+                  Tên sản phẩm *
                 </label>
                 <input
                   type="text"
@@ -114,11 +137,13 @@ export default function ProductAdd() {
                   onBlur={formik.handleBlur}
                   value={formik.values.name}
                 />
-                {formik.touched.name && formik.errors.name ? <strong>{formik.errors.name}</strong> : null}
+                {formik.touched.name && formik.errors.name ? (
+                  <strong className="text-danger">{formik.errors.name}</strong>
+                ) : null}
               </div>
               <div className="mb-3">
                 <label htmlFor="description" className="form-label">
-                  Description
+                  Mô tả sản phẩm *
                 </label>
                 <textarea
                   className="form-control rounded-0"
@@ -130,13 +155,13 @@ export default function ProductAdd() {
                   value={formik.values.description}
                 ></textarea>
                 {formik.touched.description && formik.errors.description ? (
-                  <strong>{formik.errors.description}</strong>
+                  <strong className="text-danger">{formik.errors.description}</strong>
                 ) : null}
               </div>
               <div className="row">
                 <div className="col mb-3">
                   <label htmlFor="quantity" className="form-label">
-                    Quantity *
+                    Số lượng tồn *
                   </label>
                   <input
                     type="number"
@@ -148,45 +173,46 @@ export default function ProductAdd() {
                     onBlur={formik.handleBlur}
                     value={formik.values.quantity}
                   />
-                  {formik.touched.quantity && formik.errors.quantity ? <strong>{formik.errors.quantity}</strong> : null}
+                  {formik.touched.quantity && formik.errors.quantity ? (
+                    <strong className="text-danger">{formik.errors.quantity}</strong>
+                  ) : null}
                 </div>
                 <div className="col mb-3">
                   <label htmlFor="category" className="form-label">
-                    Category *
+                    Danh mục *
                   </label>
-                  <div className="input-group">
-                    <select
-                      className="form-select rounded-0"
-                      id="category"
-                      name="category"
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      value={formik.values.category}
-                      required
-                    >
-                      <option value="" label="Select category" />
-                      {categories.map((category) => (
-                        <option key={category._id} value={category._id}>
+                  <select
+                    className="form-select rounded-0"
+                    id="category"
+                    name="category"
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.category}
+                  >
+                    <option value="">Chọn danh mục</option>
+                    {categories.map((category) => {
+                      const catId = category.id || category._id;
+                      return (
+                        <option key={catId} value={catId}>
                           {category.name}
                         </option>
-                      ))}
-                    </select>
-                    <button type="button" className="btn btn-outline-primary rounded-0">
-                      <i className="fal fa-boxes"></i>
-                    </button>
-                  </div>
-                  {formik.touched.category && formik.errors.category ? <strong>{formik.errors.category}</strong> : null}
+                      );
+                    })}
+                  </select>
+                  {formik.touched.category && formik.errors.category ? (
+                    <strong className="text-danger">{formik.errors.category}</strong>
+                  ) : null}
                 </div>
               </div>
             </div>
           </div>
           <div className="card rounded-0 border-0 shadow-sm">
             <div className="card-body">
-              <h6 className="pb-3 border-bottom">Price</h6>
+              <h6 className="pb-3 border-bottom">Giá bán</h6>
               <div className="row">
                 <div className="col mb-3">
                   <label htmlFor="price" className="form-label">
-                    Price *
+                    Giá bán (VNĐ) *
                   </label>
                   <input
                     type="number"
@@ -198,11 +224,13 @@ export default function ProductAdd() {
                     onBlur={formik.handleBlur}
                     value={formik.values.price}
                   />
-                  {formik.touched.price && formik.errors.price ? <strong>{formik.errors.price}</strong> : null}
+                  {formik.touched.price && formik.errors.price ? (
+                    <strong className="text-danger">{formik.errors.price}</strong>
+                  ) : null}
                 </div>
                 <div className="col mb-3">
                   <label htmlFor="saleprice" className="form-label">
-                    Sale Price
+                    Giá gốc / Gạch bỏ (VNĐ)
                   </label>
                   <input
                     type="number"
@@ -215,7 +243,7 @@ export default function ProductAdd() {
                     value={formik.values.saleprice}
                   />
                   {formik.touched.saleprice && formik.errors.saleprice ? (
-                    <strong>{formik.errors.saleprice}</strong>
+                    <strong className="text-danger">{formik.errors.saleprice}</strong>
                   ) : null}
                 </div>
               </div>
@@ -225,28 +253,34 @@ export default function ProductAdd() {
         <div className="col-md-4 mb-4">
           <div className="card rounded-0 border-0 shadow-sm">
             <div className="card-body">
-              <h6 className="pb-3 border-bottom">Image</h6>
+              <h6 className="pb-3 border-bottom">Ảnh sản phẩm</h6>
               <div className="mb-3">
                 <label htmlFor="image" className="form-label">
-                  Product Image *
+                  Tải ảnh từ máy tính *
                 </label>
                 <input
                   className="form-control rounded-0"
                   type="file"
                   id="image"
                   name="image"
+                  accept="image/*"
                   onChange={(event) => {
                     formik.setFieldValue("image", event.currentTarget.files[0]);
                   }}
                   onBlur={formik.handleBlur}
                 />
-                {formik.touched.image && formik.errors.image ? <strong>{formik.errors.image}</strong> : null}
-                <div className="bg-secondary-subtle mb-3 p-2 text-center"></div>
+                {formik.touched.image && formik.errors.image ? (
+                  <strong className="text-danger">{formik.errors.image}</strong>
+                ) : null}
               </div>
             </div>
           </div>
-          <button type="submit" className="btn btn-primary btn-lg rounded-0 mt-4 w-100">
-            Add Product
+          <button
+            type="submit"
+            className="btn btn-primary btn-lg rounded-0 mt-4 w-100"
+            disabled={formik.isSubmitting}
+          >
+            {formik.isSubmitting ? "Đang tải ảnh & lưu..." : "Thêm sản phẩm"}
           </button>
         </div>
       </form>

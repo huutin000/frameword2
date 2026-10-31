@@ -1,82 +1,82 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function Category() {
   const [data, setData] = useState([]);
+  const [totalProducts, setTotalProducts] = useState(0);
+
   const fetchCategory = async () => {
-    const res = await fetch("http://localhost:3000/category", {
-      cache: "no-cache",
-    });
-    const newData = await res.json();
-    setData(newData);
+    try {
+      const supabase = createClient();
+      const { data: categories, error } = await supabase
+        .from("categories")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setData(categories || []);
+
+      const { count } = await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true });
+      setTotalProducts(count || 0);
+    } catch (err) {
+      console.error("Lỗi lấy danh mục:", err);
+    }
   };
+
   useEffect(() => {
     fetchCategory();
   }, []);
+
   const deleteCategory = async (id) => {
-    if (confirm("Bạn có chắc chắn muốn xoá sản phẩm này không?")) {
-      const res = await fetch(` http://localhost:3000/category/deleteCategory/${id}`, {
-        method: "DELETE",
-      });
-      const result = await res.json();
-      if (result) {
+    if (confirm("Bạn có chắc chắn muốn xoá danh mục này không?")) {
+      try {
+        const supabase = createClient();
+        const { error } = await supabase.from("categories").delete().eq("id", id);
+        if (error) throw error;
         fetchCategory();
+      } catch (err) {
+        alert("Lỗi khi xóa danh mục: " + err.message);
       }
     }
   };
+
   return (
     <>
       <div className="d-flex justify-content-between">
-        <h3 className="mb-4">Products</h3>
+        <h3 className="mb-4">Danh mục sản phẩm</h3>
         <div>
-          <Link href="#" className="btn btn-outline-success rounded-0">
-            Manage Categories
+          <Link href="/admin/category" className="btn btn-outline-success rounded-0 me-2">
+            Quản lý danh mục
           </Link>
-          <Link href="/admin/category/addcate" className="btn btn-primary rounded-0">
-            Add Category
+          <Link href="/admin/category/add" className="btn btn-primary rounded-0">
+            Thêm danh mục
           </Link>
         </div>
       </div>
       <div className="row">
-        <div className="col-md-3 mb-4">
+        <div className="col-md-4 mb-4">
           <div className="card border-0 rounded-0 bg-primary-subtle text-primary">
             <div className="card-body text-end">
               <div className="display-6 d-flex justify-content-between">
                 <i className="fal fa-box"></i>
-                20
+                {totalProducts}
               </div>
-              PRODUCTS
+              TỔNG SẢN PHẨM
             </div>
           </div>
         </div>
-        <div className="col-md-3 mb-4">
-          <div className="card border-0 rounded-0 bg-danger-subtle text-danger">
-            <div className="card-body text-end">
-              <div className="display-6 d-flex justify-content-between">
-                <i className="fal fa-box-open"></i>3
-              </div>
-              RUNNING OUT
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3 mb-4">
+        <div className="col-md-4 mb-4">
           <div className="card border-0 rounded-0 bg-success-subtle text-success">
             <div className="card-body text-end">
               <div className="display-6 d-flex justify-content-between">
-                <i className="fal fa-boxes"></i>5
+                <i className="fal fa-boxes"></i>
+                {data.length}
               </div>
-              CATEGORIES
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3 mb-4">
-          <div className="card border-0 rounded-0 bg-dark-subtle text-dark">
-            <div className="card-body text-end">
-              <div className="display-6 d-flex justify-content-between">
-                <i className="fal fa-archive"></i>0
-              </div>
-              ARCHIVE
+              DANH MỤC
             </div>
           </div>
         </div>
@@ -87,38 +87,38 @@ export default function Category() {
           <table className="table text-center">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Action</th>
+                <th>Tên danh mục</th>
+                <th>Mô tả</th>
+                <th>Hành động</th>
               </tr>
             </thead>
             <tbody className="align-middle">
-              {data.map((category, index) => (
-                <tr key={index}>
-                  <td className="text-start">
-                    <strong>{category.name}</strong>
-                    <br />
-                  </td>
-
-                  <td>{category.description}</td>
-
-                  <td>
-                    <Link
-                      href={`/admin/category/updatecate/${category._id}`}
-                      className="btn btn-outline-warning btn-sm"
-                    >
-                      <i className="fas fa-pencil fa-fw"></i>
-                    </Link>
-                    <Link
-                      href="#"
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => deleteCategory(category._id)}
-                    >
-                      <i className="fas fa-times fa-fw"></i>
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {data.map((category) => {
+                const id = category.id || category._id;
+                return (
+                  <tr key={id}>
+                    <td className="text-start">
+                      <strong>{category.name}</strong>
+                    </td>
+                    <td>{category.description || "-"}</td>
+                    <td>
+                      <Link
+                        href={`/admin/category/update/${id}`}
+                        className="btn btn-outline-warning btn-sm me-2"
+                      >
+                        <i className="fas fa-pencil fa-fw"></i>
+                      </Link>
+                      <button
+                        type="button"
+                        className="btn btn-outline-danger btn-sm"
+                        onClick={() => deleteCategory(id)}
+                      >
+                        <i className="fas fa-times fa-fw"></i>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

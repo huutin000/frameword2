@@ -2,13 +2,15 @@ import "@/public/style/globals.css";
 import "@/public/bootstrap/css/bootstrap.min.css";
 import "@/public/bootstrap/css/style.css";
 import "@/public/bootstrap/css/fontawesome.css";
-import Leftbar from "./components/leftbar";
+import Leftbar from "./Leftbar";
 import Link from "next/link";
-Link;
+import Script from "next/script";
+
 export const metadata = {
   title: "Admin CellPhoneS",
   description: "Chào mừng đến với trang Admin CellPhoneS.",
 };
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
@@ -16,7 +18,7 @@ export default function RootLayout({ children }) {
         <div className="d-flex min-vh-100">
           <div
             className="d-flex flex-column flex-shrink-0 p-3 text-bg-primary"
-            style={{ maxwidth: 280 + "px" }}
+            style={{ maxWidth: 280 + "px" }}
             data-bs-theme="dark"
           >
             <Link
@@ -107,8 +109,8 @@ export default function RootLayout({ children }) {
                       </Link>
                       <ul className="dropdown-menu rounded-0 dropdown-menu-md-end">
                         <li>
-                          <Link className="dropdown-item" href="../admin/login/dangnhap">
-                         Login
+                          <Link className="dropdown-item" href="/admin/login">
+                            Login
                           </Link>
                         </li>
                         <li>
@@ -134,8 +136,7 @@ export default function RootLayout({ children }) {
             <div className="container-fluid p-4">{children}</div>
           </div>
         </div>
-        <script src="/bootstrap/js/google.chart.js"></script>
-        <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <Script src="/bootstrap/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
       </body>
     </html>
   );

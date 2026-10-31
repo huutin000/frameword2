@@ -1,13 +1,69 @@
-import ProductCard from "./components/productcard";
+import ProductCard from "@/components/ProductCard";
+import { createClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const productdienthoai = await fetch("http://localhost:3000/product/productcate/65f2829efc13ae110c318c55");
-  const dienthoai = await productdienthoai.json();
-  console.log(dienthoai);
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseAnonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_KEY ||
+    process.env.SUPABASE_ANON_KEY;
 
-  const productlaptop = await fetch("http://localhost:3000/product/productcate/65f2829efc13ae110c318c56");
-  const laptop = await productlaptop.json();
-  console.log(laptop);
+  if (!supabaseUrl || !supabaseAnonKey) {
+    const missing = [];
+    if (!supabaseUrl) missing.push("NEXT_PUBLIC_SUPABASE_URL");
+    if (!supabaseAnonKey) missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+
+    return (
+      <div className="container py-5 text-center">
+        <div className="alert alert-warning p-4 shadow-sm">
+          <h4 className="alert-heading">⚠️ Chưa nhận được biến môi trường</h4>
+          <p>
+            Hệ thống đang thiếu biến: <strong>{missing.join(" và ")}</strong> trong file <code>frontend/.env.local</code>.
+          </p>
+          <p className="mt-2 text-muted">
+            Vui lòng kiểm tra lại tên biến và đảm bảo đã nhấn <strong>Ctrl + S</strong> để lưu file <code>.env.local</code>.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  let dienthoai = [];
+  let laptop = [];
+
+  try {
+    const supabase = createClient();
+
+    // Lấy sản phẩm thuộc danh mục "Điện thoại"
+    const { data: dienthoaiData } = await supabase
+      .from("products")
+      .select("*, categories!inner(name)")
+      .ilike("categories.name", "%Điện thoại%");
+
+    // Lấy sản phẩm thuộc danh mục "Laptop"
+    const { data: laptopData } = await supabase
+      .from("products")
+      .select("*, categories!inner(name)")
+      .ilike("categories.name", "%Laptop%");
+
+    dienthoai = dienthoaiData || [];
+    laptop = laptopData || [];
+
+    // Dự phòng nếu chưa gán đúng tên danh mục thì hiển thị danh sách sản phẩm chung
+    if (dienthoai.length === 0 && laptop.length === 0) {
+      const { data: allProducts } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(10);
+      dienthoai = allProducts || [];
+    }
+  } catch (error) {
+    console.error("Lỗi truy vấn Supabase:", error);
+  }
 
   return (
     <>
@@ -44,7 +100,6 @@ export default async function Home() {
           <img src="/asset/image/uu-dai-sv1.png" alt="" />
         </div>
       </div>
-   
     </>
   );
 }

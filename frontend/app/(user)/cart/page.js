@@ -1,26 +1,23 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { removeFromCart, updateCartItemQuantity } from "../redux/slices/cartslice";
-import { useMemo } from "react";
+import { removeFromCart, updateCartItemQuantity } from "@/lib/store";
+import { getImageUrl } from "@/lib/image";
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState([]);
   const dispatch = useDispatch();
+  const rawItems = useSelector((state) => state.cart?.items);
+  const cartItems = useMemo(() => rawItems || [], [rawItems]);
 
-  useEffect(() => {
-    // Đọc dữ liệu từ localStorage trên client
-    const savedItems = JSON.parse(localStorage.getItem("cartItems")) || [];
-    setCartItems(savedItems);
-  }, []);
-
-  // Cập nhật cartItems từ Redux store
-  const itemsFromStore = useSelector((state) => state.cart?.items) || [];
-  useEffect(() => {
-    setCartItems(itemsFromStore);
-  }, [itemsFromStore]);
-
-  const total = useMemo(() => cartItems.reduce((total, item) => total + item.price * item.quantity, 0), [cartItems]);
+  const total = useMemo(
+    () =>
+      cartItems.reduce(
+        (acc, item) =>
+          acc + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+        0
+      ),
+    [cartItems]
+  );
 
   return (
     <div className="container mt-3">
@@ -37,42 +34,80 @@ const CartPage = () => {
             </tr>
           </thead>
           <tbody>
-            {cartItems.map((item) => (
-              <tr key={item._id}>
-                <td>{item.name}</td>
-                <td>
-                  <img
-                    src={`http://localhost:3000/image/${item.image}`}
-                    alt={item.name}
-                    className="img-fluid"
-                    style={{ maxWidth: "100px" }}
-                  />
-                </td>
-                <td>
-                  <input
-                    min="1"
-                    type="number"
-                    className="form-control"
-                    value={item.quantity}
-                    onChange={(e) =>
-                      dispatch(updateCartItemQuantity({ _id: item._id, quantity: parseInt(e.target.value) }))
-                    }
-                  />
-                </td>
-                <td>{item.price.toLocaleString()}</td>
-                <td>{(item.price * item.quantity).toLocaleString()}</td>
-                <td>
-                  <button className="btn btn-danger" onClick={() => dispatch(removeFromCart(item._id))}>
-                    Xóa
-                  </button>
+            {cartItems.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="text-center py-4 text-muted">
+                  Giỏ hàng của bạn đang trống.
                 </td>
               </tr>
-            ))}
+            ) : (
+              cartItems.map((item) => {
+                const id = item.id || item._id;
+                return (
+                  <tr key={id}>
+                    <td>{item.name}</td>
+                    <td>
+                      <img
+                        src={getImageUrl(item.image)}
+                        alt={item.name}
+                        className="img-fluid"
+                        style={{ maxWidth: "100px" }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        min="1"
+                        type="number"
+                        className="form-control"
+                        value={item.quantity}
+                        onChange={(e) =>
+                          dispatch(
+                            updateCartItemQuantity({
+                              id: id,
+                              _id: id,
+                              quantity: parseInt(e.target.value, 10) || 1,
+                            })
+                          )
+                        }
+                      />
+                    </td>
+                    <td>
+                      {Number(item.price).toLocaleString("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      })}
+                    </td>
+                    <td>
+                      {(
+                        (Number(item.price) || 0) *
+                        (Number(item.quantity) || 1)
+                      ).toLocaleString("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      })}
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => dispatch(removeFromCart(id))}
+                      >
+                        Xóa
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
             <tr className="table-primary">
               <td colSpan="4" className="text-right">
                 Tổng cộng
               </td>
-              <td>{total.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}</td>
+              <td>
+                {total.toLocaleString("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                })}
+              </td>
               <td></td>
             </tr>
           </tbody>

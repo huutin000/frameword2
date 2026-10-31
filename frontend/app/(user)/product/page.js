@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import ProductCard from "../components/productcard";
+import ProductCard from "@/components/ProductCard";
+import { createClient } from "@/lib/supabase/client";
 
 export default function Product() {
   const [product, setProduct] = useState([]);
@@ -13,29 +14,41 @@ export default function Product() {
 
   useEffect(() => {
     async function fetchProduct() {
-      let url = "http://localhost:3000/product";
-      if (!filters.showAll) {
-        const selectedCategories = [];
-        if (filters.showPhone) selectedCategories.push("65f2829efc13ae110c318c55");
-        if (filters.showLaptop) selectedCategories.push("65f2829efc13ae110c318c56");
+      const supabase = createClient();
+      let query = supabase.from("products").select("*, categories(name)");
 
-        if (selectedCategories.length > 0) {
-          url = `http://localhost:3000/product/productcate/${selectedCategories.join(",")}`;
+      if (!filters.showAll) {
+        if (filters.showPhone) {
+          query = supabase
+            .from("products")
+            .select("*, categories!inner(name)")
+            .ilike("categories.name", "%Điện thoại%");
+        } else if (filters.showLaptop) {
+          query = supabase
+            .from("products")
+            .select("*, categories!inner(name)")
+            .ilike("categories.name", "%Laptop%");
         }
       }
-      const res = await fetch(url);
-      const newProduct = await res.json();
-      setProduct(newProduct);
+
+      const { data, error } = await query;
+      if (error) {
+        console.error("Lỗi lấy danh sách sản phẩm:", error);
+      } else {
+        setProduct(data || []);
+      }
     }
     fetchProduct();
   }, [filters]);
 
-  const handleSort = (product) => {
-    return [...product].sort((a, b) => {
+  const handleSort = (products) => {
+    return [...products].sort((a, b) => {
+      const priceA = Number(a.price) || 0;
+      const priceB = Number(b.price) || 0;
       if (sortOption === "asc") {
-        return a.price - b.price;
+        return priceA - priceB;
       } else {
-        return b.price - a.price;
+        return priceB - priceA;
       }
     });
   };
@@ -60,21 +73,21 @@ export default function Product() {
         showLaptop: true,
       });
     } else {
-      setFilters((prevFilters) => ({
-        ...prevFilters,
+      setFilters({
         showAll: true,
         showPhone: false,
         showLaptop: false,
-      }));
+      });
     }
   };
+
   return (
     <>
       <h1>Danh sách sản phẩm</h1>
 
       <div className="controls">
         <label htmlFor="sort">Sắp xếp:</label>
-        <select id="sort" onChange={handleSortChange}>
+        <select id="sort" onChange={handleSortChange} value={sortOption}>
           <option value="asc">Giá tăng dần</option>
           <option value="desc">Giá giảm dần</option>
         </select>

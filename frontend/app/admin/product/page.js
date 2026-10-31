@@ -1,82 +1,83 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { getImageUrl } from "@/lib/image";
 
 export default function Product() {
   const [data, setData] = useState([]);
+  const [totalCategories, setTotalCategories] = useState(0);
+
   const fetchProducts = async () => {
-    const res = await fetch("http://localhost:3000/product", {
-      cache: "no-cache",
-    });
-    const newData = await res.json();
-    setData(newData);
+    try {
+      const supabase = createClient();
+      const { data: products, error } = await supabase
+        .from("products")
+        .select("*, categories(name)")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setData(products || []);
+
+      const { count } = await supabase
+        .from("categories")
+        .select("*", { count: "exact", head: true });
+      setTotalCategories(count || 0);
+    } catch (err) {
+      console.error("Lỗi lấy danh sách sản phẩm:", err);
+    }
   };
+
   useEffect(() => {
     fetchProducts();
   }, []);
+
   const deleteProduct = async (id) => {
     if (confirm("Bạn có chắc chắn muốn xoá sản phẩm này không?")) {
-      const res = await fetch(` http://localhost:3000/product/deleteProduct/${id}`, {
-        method: "DELETE",
-      });
-      const result = await res.json();
-      if (result) {
+      try {
+        const supabase = createClient();
+        const { error } = await supabase.from("products").delete().eq("id", id);
+        if (error) throw error;
         fetchProducts();
+      } catch (err) {
+        alert("Lỗi khi xóa sản phẩm: " + err.message);
       }
     }
   };
+
   return (
     <>
       <div className="d-flex justify-content-between">
-        <h3 className="mb-4">Products</h3>
+        <h3 className="mb-4">Sản phẩm</h3>
         <div>
-          <Link href="#" className="btn btn-outline-success rounded-0">
-            Manage Categories
+          <Link href="/admin/category" className="btn btn-outline-success rounded-0 me-2">
+            Quản lý danh mục
           </Link>
           <Link href="/admin/product/add" className="btn btn-primary rounded-0">
-            Add Product
+            Thêm sản phẩm
           </Link>
         </div>
       </div>
       <div className="row">
-        <div className="col-md-3 mb-4">
+        <div className="col-md-4 mb-4">
           <div className="card border-0 rounded-0 bg-primary-subtle text-primary">
             <div className="card-body text-end">
               <div className="display-6 d-flex justify-content-between">
                 <i className="fal fa-box"></i>
-                20
+                {data.length}
               </div>
-              PRODUCTS
+              TỔNG SẢN PHẨM
             </div>
           </div>
         </div>
-        <div className="col-md-3 mb-4">
-          <div className="card border-0 rounded-0 bg-danger-subtle text-danger">
-            <div className="card-body text-end">
-              <div className="display-6 d-flex justify-content-between">
-                <i className="fal fa-box-open"></i>3
-              </div>
-              RUNNING OUT
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3 mb-4">
+        <div className="col-md-4 mb-4">
           <div className="card border-0 rounded-0 bg-success-subtle text-success">
             <div className="card-body text-end">
               <div className="display-6 d-flex justify-content-between">
-                <i className="fal fa-boxes"></i>5
+                <i className="fal fa-boxes"></i>
+                {totalCategories}
               </div>
-              CATEGORIES
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3 mb-4">
-          <div className="card border-0 rounded-0 bg-dark-subtle text-dark">
-            <div className="card-body text-end">
-              <div className="display-6 d-flex justify-content-between">
-                <i className="fal fa-archive"></i>0
-              </div>
-              ARCHIVE
+              DANH MỤC
             </div>
           </div>
         </div>
@@ -88,64 +89,66 @@ export default function Product() {
             <thead>
               <tr>
                 <th className="text-start" colSpan="2">
-                  Product
+                  Sản phẩm
                 </th>
-                <th>Price</th>
-                <th>Quantity</th>
-                {/* <th>Rating</th> */}
-                <th>Description</th>
-                <th>Action</th>
+                <th>Giá</th>
+                <th>Số lượng</th>
+                <th>Mô tả</th>
+                <th>Hành động</th>
               </tr>
             </thead>
             <tbody className="align-middle">
-              {data.map((product, index) => (
-                <tr key={index}>
-                  <td style={{ width: 64 + "px" }}>
-                    <img src={`http://localhost:3000/image/${product.image}`} className="w-100" />
-                  </td>
-                  <td className="text-start">
-                    <strong>{product.name}</strong>
-                    <br />
-                    <small>
-                      Id: <strong>{index + 1}</strong> | Category:{" "}
-                      <Link href="#" className="text-decoration-none fw-bold">
-                        {product.category.categoryName}
+              {data.map((product, index) => {
+                const id = product.id || product._id;
+                const categoryName = product.categories?.name || product.category?.categoryName || "Chưa phân loại";
+
+                return (
+                  <tr key={id}>
+                    <td style={{ width: 64 + "px" }}>
+                      <img
+                        src={getImageUrl(product.image)}
+                        className="w-100 rounded"
+                        alt={product.name}
+                        style={{ maxHeight: "64px", objectFit: "contain" }}
+                      />
+                    </td>
+                    <td className="text-start">
+                      <strong>{product.name}</strong>
+                      <br />
+                      <small className="text-muted">
+                        Danh mục: <strong>{categoryName}</strong>
+                      </small>
+                    </td>
+                    <td>
+                      {Number(product.price).toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+                      {product.del && Number(product.del) > 0 && (
+                        <>
+                          <br />
+                          <del className="text-muted small">
+                            {Number(product.del).toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+                          </del>
+                        </>
+                      )}
+                    </td>
+                    <td>{product.quantity}</td>
+                    <td style={{ maxWidth: 300 + "px" }} className="text-truncate">
+                      {product.description}
+                    </td>
+                    <td>
+                      <Link href={`/admin/product/update/${id}`} className="btn btn-outline-warning btn-sm me-2">
+                        <i className="fas fa-pencil fa-fw"></i>
                       </Link>
-                    </small>
-                  </td>
-                  <td>
-                    {product.price.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
-                    <br />
-                    <del>
-                      {product.del !== undefined
-                        ? product.del.toLocaleString("vi-VN", { style: "currency", currency: "VND" })
-                        : ""}
-                    </del>
-                  </td>
-                  <td>{product.quantity}</td>
-                  <td style={{ width: 500 + "px" }}>{product.description}</td>
-                  {/* <td>
-                    4.6
-                    <br />
-                    <i className="fas fa-star fa-xs text-warning"></i>
-                    <i className="fas fa-star fa-xs text-warning"></i>
-                    <i className="fas fa-star fa-xs text-warning"></i>
-                    <i className="fas fa-star fa-xs text-warning"></i>
-                    <i className="far fa-star fa-xs text-warning"></i>
-                  </td> */}
-                  <td>
-                    {/* <Link href="#" target="_blank" className="btn btn-primary btn-sm">
-                      <i className="fas fa-eye fa-fw"></i>
-                    </Link> */}
-                    <Link href={`/admin/product/update/${product._id}`} className="btn btn-outline-warning btn-sm">
-                      <i className="fas fa-pencil fa-fw"></i>
-                    </Link>
-                    <Link href="#" className="btn btn-outline-danger btn-sm" onClick={() => deleteProduct(product._id)}>
-                      <i className="fas fa-times fa-fw"></i>
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+                      <button
+                        type="button"
+                        className="btn btn-outline-danger btn-sm"
+                        onClick={() => deleteProduct(id)}
+                      >
+                        <i className="fas fa-times fa-fw"></i>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

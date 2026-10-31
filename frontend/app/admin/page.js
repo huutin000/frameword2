@@ -1,4 +1,66 @@
-import RecentOrders from "./components/recentOrders";
+function RecentOrders() {
+  return (
+    <>
+      <div className="d-flex text-body-secondary pt-3">
+        <div className="p-2 me-2 bg-warning text-white">
+          <i className="fal fa-receipt"></i>
+        </div>
+        <a href="#" className="py-2 mb-0 small lh-sm border-bottom w-100 text-decoration-none text-body-secondary">
+          <strong className="d-flex justify-content-between">
+            Đơn #122
+            <div>
+              <span className="badge text-bg-warning">
+                <i className="far fa-box"></i> 20
+              </span>
+              <span className="badge bg-success-subtle text-success">
+                <i className="far fa-money-bill-wave"></i> 100,000,000
+              </span>
+            </div>
+          </strong>
+          Đặt bởi <i>Khách vãng lai</i> lúc 18:00 04/06/2024
+        </a>
+      </div>
+      <div className="d-flex text-body-secondary pt-3">
+        <div className="p-2 me-2 bg-success text-white">
+          <i className="fal fa-receipt"></i>
+        </div>
+        <a href="#" className="py-2 mb-0 small lh-sm border-bottom w-100 text-decoration-none text-body-secondary">
+          <strong className="d-flex justify-content-between">
+            Đơn #122
+            <div>
+              <span className="badge text-bg-warning">
+                <i className="far fa-box"></i> 5
+              </span>
+              <span className="badge bg-success-subtle text-success">
+                <i className="far fa-money-bill-wave"></i> 10,000,000
+              </span>
+            </div>
+          </strong>
+          Đặt bởi <i>Khách vãng lai</i> lúc 18:00 04/06/2024
+        </a>
+      </div>
+      <div className="d-flex text-body-secondary pt-3">
+        <div className="p-2 me-2 bg-danger text-white">
+          <i className="fal fa-receipt"></i>
+        </div>
+        <a href="#" className="py-2 mb-0 small lh-sm border-bottom w-100 text-decoration-none text-body-secondary">
+          <strong className="d-flex justify-content-between">
+            Đơn #121
+            <div>
+              <span className="badge text-bg-warning">
+                <i className="far fa-box"></i> 5
+              </span>
+              <span className="badge bg-success-subtle text-success">
+                <i className="far fa-money-bill-wave"></i> 10,000,000
+              </span>
+            </div>
+          </strong>
+          Đặt bởi <i>Khách vãng lai</i> lúc 18:00 04/06/2024
+        </a>
+      </div>
+    </>
+  );
+}
 
 export default function Dashboard() {
   return (
@@ -67,7 +129,6 @@ export default function Dashboard() {
                   </a>
                 </small>
               </div>
-              {/* Tạo components recentOrders*/}
               <RecentOrders />
             </div>
           </div>
@@ -105,7 +166,6 @@ export default function Dashboard() {
                   Sản phẩm xịn, giá tốt!
                 </a>
               </div>
-              {/* Tạo components recentOrders*/}
               <div className="d-flex text-body-secondary pt-3">
                 <i className="far fa-comment-alt-smile"></i>
                 <a
