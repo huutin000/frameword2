@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="14" fill="#FAF8F5"/>
+  <g transform="translate(8, 8)">
+    <!-- Floor Tile (Oat) -->
+    <path d="M24 0 L48 14 L24 28 L0 14 Z" fill="#F3EFEA" stroke="#D3C7B7" stroke-width="1.8" stroke-linejoin="round"/>
+    <!-- Left Wall (Sage) -->
+    <path d="M0 14 L24 28 L24 48 L0 34 Z" fill="#5B7065" stroke="#485B51" stroke-width="1.8" stroke-linejoin="round"/>
+    <!-- Right Wall (Walnut) -->
+    <path d="M24 28 L48 14 L48 34 L24 48 Z" fill="#5A4033" stroke="#432F25" stroke-width="1.8" stroke-linejoin="round"/>
+    <!-- Inner Accent (Terracotta & Sage) -->
+    <circle cx="24" cy="20" r="4.5" fill="#B85D43"/>
+    <path d="M24 20 Q29 11 34 14 Q29 20 24 20 Z" fill="#5B7065"/>
+  </g>
+</svg>
+

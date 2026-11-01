@@ -13,7 +13,7 @@ test.describe("Full E2E Cart Flow & State Persistence", () => {
 
     // 1. Mở trang danh sách sản phẩm
     await page.goto("/product");
-    await expect(page).toHaveTitle(/CellPhoneS/i);
+    await expect(page).toHaveTitle(/KOVIQO/i);
 
     // Chờ sản phẩm xuất hiện
     const addButtons = page.locator("button.dat-hang");
@@ -23,7 +23,7 @@ test.describe("Full E2E Cart Flow & State Persistence", () => {
     await addButtons.first().click();
 
     // 3. Kiểm tra Header Cart Badge cập nhật lên ít nhất 1
-    const cartHeader = page.locator("a[href*='cart']");
+    const cartHeader = page.locator("a[href*='cart']").first();
     await expect(cartHeader).toContainText(/1\s+Giỏ hàng/);
 
     // 4. Chuyển sang trang /cart

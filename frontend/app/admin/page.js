@@ -1,258 +1,247 @@
-function RecentOrders() {
+"use client";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { getImageUrl } from "@/lib/image";
+
+export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    productsCount: 0,
+    categoriesCount: 0,
+    loading: true,
+  });
+  const [recentProducts, setRecentProducts] = useState([]);
+
+  useEffect(() => {
+    async function fetchDashboardData() {
+      try {
+        const supabase = createClient();
+
+        // 1. Fetch counts
+        const [{ count: pCount }, { count: cCount }] = await Promise.all([
+          supabase.from("products").select("*", { count: "exact", head: true }),
+          supabase.from("categories").select("*", { count: "exact", head: true }),
+        ]);
+
+        // 2. Fetch recent products
+        const { data: latest } = await supabase
+          .from("products")
+          .select("*, categories(name)")
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        setStats({
+          productsCount: pCount || 0,
+          categoriesCount: cCount || 0,
+          loading: false,
+        });
+        setRecentProducts(latest || []);
+      } catch (err) {
+        console.error("Lỗi nạp dữ liệu dashboard:", err);
+        setStats((prev) => ({ ...prev, loading: false }));
+      }
+    }
+
+    fetchDashboardData();
+  }, []);
+
   return (
-    <>
-      <div className="d-flex text-body-secondary pt-3">
-        <div className="p-2 me-2 bg-warning text-white">
-          <i className="fal fa-receipt"></i>
+    <div>
+      {/* Page Header */}
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+          <h1 className="h3 fw-bold text-dark mb-1">Bảng điều khiển</h1>
+          <p className="text-muted small mb-0">
+            Tổng quan hệ thống thương mại điện tử NEXUSTECH
+          </p>
         </div>
-        <a href="#" className="py-2 mb-0 small lh-sm border-bottom w-100 text-decoration-none text-body-secondary">
-          <strong className="d-flex justify-content-between">
-            Đơn #122
-            <div>
-              <span className="badge text-bg-warning">
-                <i className="far fa-box"></i> 20
-              </span>
-              <span className="badge bg-success-subtle text-success">
-                <i className="far fa-money-bill-wave"></i> 100,000,000
-              </span>
-            </div>
-          </strong>
-          Đặt bởi <i>Khách vãng lai</i> lúc 18:00 04/06/2024
-        </a>
-      </div>
-      <div className="d-flex text-body-secondary pt-3">
-        <div className="p-2 me-2 bg-success text-white">
-          <i className="fal fa-receipt"></i>
+        <div className="d-flex gap-2">
+          <Link href="/admin/product/add" className="btn btn-primary btn-sm fw-semibold">
+            <i className="fa-solid fa-plus me-1"></i> Thêm sản phẩm
+          </Link>
+          <Link href="/admin/category/add" className="btn btn-outline-primary btn-sm fw-semibold">
+            <i className="fa-solid fa-folder-plus me-1"></i> Thêm danh mục
+          </Link>
         </div>
-        <a href="#" className="py-2 mb-0 small lh-sm border-bottom w-100 text-decoration-none text-body-secondary">
-          <strong className="d-flex justify-content-between">
-            Đơn #122
-            <div>
-              <span className="badge text-bg-warning">
-                <i className="far fa-box"></i> 5
-              </span>
-              <span className="badge bg-success-subtle text-success">
-                <i className="far fa-money-bill-wave"></i> 10,000,000
-              </span>
-            </div>
-          </strong>
-          Đặt bởi <i>Khách vãng lai</i> lúc 18:00 04/06/2024
-        </a>
       </div>
-      <div className="d-flex text-body-secondary pt-3">
-        <div className="p-2 me-2 bg-danger text-white">
-          <i className="fal fa-receipt"></i>
-        </div>
-        <a href="#" className="py-2 mb-0 small lh-sm border-bottom w-100 text-decoration-none text-body-secondary">
-          <strong className="d-flex justify-content-between">
-            Đơn #121
-            <div>
-              <span className="badge text-bg-warning">
-                <i className="far fa-box"></i> 5
-              </span>
-              <span className="badge bg-success-subtle text-success">
-                <i className="far fa-money-bill-wave"></i> 10,000,000
-              </span>
-            </div>
-          </strong>
-          Đặt bởi <i>Khách vãng lai</i> lúc 18:00 04/06/2024
-        </a>
-      </div>
-    </>
-  );
-}
 
-export default function Dashboard() {
-  return (
-    <>
-      <div className="d-flex justify-content-between">
-        <h3 className="mb-4">Dashboard</h3>
-      </div>
-      <div className="row">
-        <div className="col-md-3 mb-4">
-          <div className="card border-0 rounded-0 bg-primary-subtle text-primary">
-            <div className="card-body text-end">
-              <div className="display-6 d-flex justify-content-between">
-                <i className="fal fa-file-invoice-dollar"></i>
-                122
+      {/* 4 Stat Cards */}
+      <div className="row g-3 mb-4">
+        {/* Products Stat */}
+        <div className="col-sm-6 col-xl-3">
+          <div className="admin-stat-card">
+            <div>
+              <div className="admin-stat-value">
+                {stats.loading ? "..." : stats.productsCount}
               </div>
-              ORDERS
+              <div className="admin-stat-label">Tổng sản phẩm</div>
             </div>
-          </div>
-        </div>
-        <div className="col-md-3 mb-4">
-          <div className="card border-0 rounded-0 bg-warning-subtle text-warning">
-            <div className="card-body text-end">
-              <div className="display-6 d-flex justify-content-between">
-                <i className="fal fa-boxes"></i>
-                20
-              </div>
-              PRODUCTS
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3 mb-4">
-          <div className="card border-0 rounded-0 bg-danger-subtle text-danger">
-            <div className="card-body text-end">
-              <div className="display-6 d-flex justify-content-between">
-                <i className="fal fa-users"></i>
-                10,003
-              </div>
-              CUSTOMERS
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3 mb-4">
-          <div className="card border-0 rounded-0 bg-success-subtle text-success">
-            <div className="card-body text-end">
-              <div className="display-6 d-flex justify-content-between">
-                <i className="fal fa-chart-line"></i>
-                1.5 B
-              </div>
-              INCOMES
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="row">
-        <div className="col-md-4 mb-3">
-          <div className="card rounded-0 border-0 shadow-sm">
-            <div className="card-body">
-              <div className="d-flex border-bottom pb-2 justify-content-between">
-                <h6 className="mb-0">
-                  <i className="fal fa-file-invoice-dollar fa-lg"></i>
-                  Recent Orders
-                </h6>
-                <small>
-                  <a href="#" className="text-decoration-none">
-                    All Orders
-                  </a>
-                </small>
-              </div>
-              <RecentOrders />
-            </div>
-          </div>
-        </div>
-        <div className="col-md-4 mb-3">
-          <div className="card rounded-0 border-0 shadow-sm">
-            <div className="card-body">
-              <div className="d-flex border-bottom pb-2 justify-content-between">
-                <h6 className="mb-0">
-                  <i className="fal fa-stars fa-lg"></i>
-                  Recent Ratings
-                </h6>
-                <small>
-                  <a href="#" className="text-decoration-none">
-                    All Ratings
-                  </a>
-                </small>
-              </div>
-              <div className="d-flex text-body-secondary pt-3">
-                <i className="far fa-comment-alt-smile"></i>
-                <a
-                  href="#"
-                  className="py-2 mb-0 small lh-sm border-bottom w-100 text-decoration-none text-body-secondary"
-                >
-                  <strong className="d-flex justify-content-between">
-                    iPhone 15 Pro Max 256GB Gold Rose
-                    <div className="text-warning">
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                    </div>
-                  </strong>
-                  Sản phẩm xịn, giá tốt!
-                </a>
-              </div>
-              <div className="d-flex text-body-secondary pt-3">
-                <i className="far fa-comment-alt-smile"></i>
-                <a
-                  href="#"
-                  className="py-2 mb-0 small lh-sm border-bottom w-100 text-decoration-none text-body-secondary"
-                >
-                  <strong className="d-flex justify-content-between">
-                    Samsung Galaxy S23 Ultra
-                    <div className="text-warning">
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                    </div>
-                  </strong>
-                  Giá mắc, chất lượng tầm trung!
-                </a>
-              </div>
-              <div className="d-flex text-body-secondary pt-3">
-                <i className="far fa-comment-alt-smile"></i>
-                <a
-                  href="#"
-                  className="py-2 mb-0 small lh-sm border-bottom w-100 text-decoration-none text-body-secondary"
-                >
-                  <strong className="d-flex justify-content-between">
-                    Samsung Galaxy S23 Ultra
-                    <div className="text-warning">
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                    </div>
-                  </strong>
-                  Giá mắc, chất lượng tầm trung!
-                </a>
-              </div>
-              <div className="d-flex text-body-secondary pt-3">
-                <i className="far fa-comment-alt-smile"></i>
-                <a
-                  href="#"
-                  className="py-2 mb-0 small lh-sm border-bottom w-100 text-decoration-none text-body-secondary"
-                >
-                  <strong className="d-flex justify-content-between">
-                    Samsung Galaxy S23 Ultra
-                    <div className="text-warning">
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                    </div>
-                  </strong>
-                  Giá mắc, chất lượng tầm trung!
-                </a>
-              </div>
-              <div className="d-flex text-body-secondary pt-3">
-                <i className="far fa-comment-alt-smile"></i>
-                <a
-                  href="#"
-                  className="py-2 mb-0 small lh-sm border-bottom w-100 text-decoration-none text-body-secondary"
-                >
-                  <strong className="d-flex justify-content-between">
-                    Samsung Galaxy S23 Ultra
-                    <div className="text-warning">
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                    </div>
-                  </strong>
-                  Giá mắc, chất lượng tầm trung!
-                </a>
-              </div>
+            <div className="admin-stat-icon bg-primary-subtle text-primary">
+              <i className="fa-solid fa-box-archive"></i>
             </div>
           </div>
         </div>
 
-        <div className="col-md-4 mb-3">
-          <div className="card rounded-0 border-0 shadow-sm">
-            <div className="card-body">
-              <div className="d-flex border-bottom pb-2 justify-content-between">
-                <h6 className="mb-0">
-                  <i className="fal fa-chart-pie fa-lg"></i>
-                  Statistics
-                </h6>
+        {/* Categories Stat */}
+        <div className="col-sm-6 col-xl-3">
+          <div className="admin-stat-card">
+            <div>
+              <div className="admin-stat-value">
+                {stats.loading ? "..." : stats.categoriesCount}
               </div>
+              <div className="admin-stat-label">Danh mục thiết bị</div>
+            </div>
+            <div className="admin-stat-icon bg-success-subtle text-success">
+              <i className="fa-solid fa-layer-group"></i>
+            </div>
+          </div>
+        </div>
 
-              <div id="curve_chart" style={{ width: 100 + "%", height: 300 + "px" }}></div>
+        {/* System Health */}
+        <div className="col-sm-6 col-xl-3">
+          <div className="admin-stat-card">
+            <div>
+              <div className="admin-stat-value text-success" style={{ fontSize: "1.5rem" }}>
+                100%
+              </div>
+              <div className="admin-stat-label">Database Health</div>
+            </div>
+            <div className="admin-stat-icon bg-info-subtle text-info">
+              <i className="fa-solid fa-server"></i>
+            </div>
+          </div>
+        </div>
+
+        {/* Next.js Core */}
+        <div className="col-sm-6 col-xl-3">
+          <div className="admin-stat-card">
+            <div>
+              <div className="admin-stat-value text-dark" style={{ fontSize: "1.25rem" }}>
+                App Router
+              </div>
+              <div className="admin-stat-label">Next.js 14.2 LTS</div>
+            </div>
+            <div className="admin-stat-icon bg-warning-subtle text-warning">
+              <i className="fa-solid fa-code"></i>
             </div>
           </div>
         </div>
       </div>
-    </>
+
+      {/* Quick Action Shortcuts Banner */}
+      <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <h2 className="h5 fw-bold text-dark mb-1">Thao tác quản lý nhanh</h2>
+            <p className="text-muted small mb-0">Truy cập các tác vụ thường dùng trong 1 click chuột</p>
+          </div>
+          <div className="d-flex flex-wrap gap-2">
+            <Link href="/admin/product" className="btn btn-light btn-sm border fw-semibold">
+              <i className="fa-solid fa-list me-1 text-primary"></i> Xem kho hàng
+            </Link>
+            <Link href="/admin/category" className="btn btn-light btn-sm border fw-semibold">
+              <i className="fa-solid fa-tags me-1 text-success"></i> Quản lý danh mục
+            </Link>
+            <Link href="/admin/register" className="btn btn-light btn-sm border fw-semibold">
+              <i className="fa-solid fa-user-shield me-1 text-warning"></i> Thêm tài khoản quản trị
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Products Section */}
+      <div className="admin-table-card">
+        <div className="admin-table-header">
+          <div>
+            <h2 className="h6 fw-bold text-dark mb-0">Sản phẩm mới cập nhật gần đây</h2>
+            <span className="text-muted small">5 sản phẩm gần nhất được lưu trong cơ sở dữ liệu</span>
+          </div>
+          <Link href="/admin/product" className="btn btn-outline-primary btn-sm fw-semibold">
+            Xem tất cả <i className="fa-solid fa-arrow-right ms-1"></i>
+          </Link>
+        </div>
+
+        <div className="table-responsive">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th style={{ width: "80px" }}>Ảnh</th>
+                <th>Tên sản phẩm</th>
+                <th>Danh mục</th>
+                <th>Giá bán</th>
+                <th>Tồn kho</th>
+                <th style={{ width: "100px" }}>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentProducts.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-4 text-muted">
+                    Chưa có sản phẩm nào được tạo.
+                  </td>
+                </tr>
+              ) : (
+                recentProducts.map((p) => {
+                  const id = p.id || p._id;
+                  const price = Number(p.price) || 0;
+                  return (
+                    <tr key={id}>
+                      <td>
+                        <img
+                          src={getImageUrl(p.image)}
+                          alt={p.name}
+                          style={{
+                            width: "44px",
+                            height: "44px",
+                            objectFit: "contain",
+                            borderRadius: "6px",
+                            backgroundColor: "#f8fafc",
+                            border: "1px solid #e2e8f0",
+                          }}
+                        />
+                      </td>
+                      <td>
+                        <span className="fw-semibold text-dark">{p.name}</span>
+                      </td>
+                      <td>
+                        <span className="badge bg-light text-secondary border">
+                          {p.categories?.name || "Chưa phân loại"}
+                        </span>
+                      </td>
+                      <td className="fw-bold text-danger">
+                        {price.toLocaleString("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        })}
+                      </td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            (p.quantity || 0) > 0
+                              ? "bg-success-subtle text-success border border-success-subtle"
+                              : "bg-danger-subtle text-danger border border-danger-subtle"
+                          }`}
+                        >
+                          {(p.quantity || 0) > 0 ? `Còn ${p.quantity}` : "Hết hàng"}
+                        </span>
+                      </td>
+                      <td>
+                        <Link
+                          href={`/admin/product/update/${id}`}
+                          className="btn btn-outline-secondary btn-sm px-2 py-1"
+                          title="Chỉnh sửa sản phẩm"
+                        >
+                          <i className="fa-solid fa-pen-to-square"></i>
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }

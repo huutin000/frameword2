@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="koviqo-stem" x1="12" y1="8" x2="26" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="koviqo-top-wing" x1="26" y1="8" x2="54" y2="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60A5FA" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <linearGradient id="koviqo-bottom-wing" x1="28" y1="30" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#1E3A8A" />
+    </linearGradient>
+  </defs>
+  <!-- Background Glow / Tech container -->
+  <rect width="64" height="64" rx="16" fill="#0B0F19" />
+  
+  <!-- Left Vertical Stem -->
+  <rect x="12" y="12" width="10" height="40" rx="5" fill="url(#koviqo-stem)" />
+  
+  <!-- Upper Diagonal Wing -->
+  <path d="M26 30L44 14C45.8 12.4 48.5 13.8 48.5 16.2V21.5C48.5 22.8 47.8 24 46.8 24.8L34 35L26 30Z" fill="url(#koviqo-top-wing)" />
+  
+  <!-- Lower Diagonal Wing -->
+  <path d="M28 33L47.2 49C48.2 49.8 48.8 51.1 48.8 52.4V52.8C48.8 55.2 45.9 56.6 44.1 54.9L26 38.5L28 33Z" fill="url(#koviqo-bottom-wing)" />
+  
+  <!-- Core Apex Light Accent -->
+  <circle cx="28" cy="34" r="2.5" fill="#93C5FD" opacity="0.9" />
+</svg>
+

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -23,7 +23,7 @@ export default function CategoryAdd() {
 
       if (insertError) throw insertError;
 
-      setSuccessMessage("Thêm danh mục thành công!");
+      setSuccessMessage("Thêm danh mục mới thành công!");
       router.push("/admin/category");
     } catch (err) {
       setErrorMessage("Có lỗi xảy ra: " + err.message);
@@ -49,63 +49,96 @@ export default function CategoryAdd() {
   });
 
   return (
-    <>
-      <div className="d-flex justify-content-between">
-        <h3 className="mb-4">Thêm danh mục</h3>
+    <div>
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
-          <Link href="/admin/category" className="btn btn-outline-secondary rounded-0">
-            <i className="far fa-long-arrow-left"></i> Quay lại
+          <h1 className="h3 fw-bold text-dark mb-1">Thêm danh mục mới</h1>
+          <p className="text-muted small mb-0">Tạo nhóm phân loại thiết bị công nghệ mới</p>
+        </div>
+        <div>
+          <Link href="/admin/category" className="btn btn-outline-secondary btn-sm fw-semibold">
+            <i className="fa-solid fa-arrow-left me-1"></i> Quay lại danh mục
           </Link>
         </div>
       </div>
-      {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-      {successMessage && <div className="alert alert-success">{successMessage}</div>}
-      <form className="row" onSubmit={formik.handleSubmit}>
-        <div className="col-md-8 mb-4">
-          <div className="card rounded-0 border-0 shadow-sm mb-4">
-            <div className="card-body">
-              <h6 className="pb-3 border-bottom">Thông tin danh mục</h6>
+
+      {errorMessage && (
+        <div className="alert alert-danger py-2 px-3 small rounded-3 mb-4">
+          <i className="fa-solid fa-circle-exclamation me-1"></i> {errorMessage}
+        </div>
+      )}
+      {successMessage && (
+        <div className="alert alert-success py-2 px-3 small rounded-3 mb-4">
+          <i className="fa-solid fa-circle-check me-1"></i> {successMessage}
+        </div>
+      )}
+
+      <div className="row">
+        <div className="col-lg-7">
+          <div className="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+            <form onSubmit={formik.handleSubmit}>
               <div className="mb-3">
-                <label htmlFor="name" className="form-label">
-                  Tên danh mục *
+                <label htmlFor="name" className="auth-label">
+                  Tên danh mục <span className="text-danger">*</span>
                 </label>
                 <input
                   type="text"
-                  className="form-control rounded-0"
+                  className={`form-control ${
+                    formik.touched.name && formik.errors.name ? "is-invalid" : ""
+                  }`}
                   id="name"
                   name="name"
+                  placeholder="VD: Điện thoại, Laptop AI, Thiết bị âm thanh"
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   value={formik.values.name}
                 />
-                {formik.touched.name && formik.errors.name ? (
-                  <strong className="text-danger">{formik.errors.name}</strong>
-                ) : null}
+                {formik.touched.name && formik.errors.name && (
+                  <div className="text-danger small mt-1">{formik.errors.name}</div>
+                )}
               </div>
-              <div className="mb-3">
-                <label htmlFor="description" className="form-label">
-                  Mô tả
+
+              <div className="mb-4">
+                <label htmlFor="description" className="auth-label">
+                  Mô tả danh mục <span className="text-danger">*</span>
                 </label>
                 <textarea
-                  className="form-control rounded-0"
+                  className={`form-control ${
+                    formik.touched.description && formik.errors.description ? "is-invalid" : ""
+                  }`}
                   id="description"
-                  rows="6"
+                  rows="5"
                   name="description"
+                  placeholder="Mô tả nhóm sản phẩm, phục vụ hiển thị trên storefront..."
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   value={formik.values.description}
                 ></textarea>
-                {formik.touched.description && formik.errors.description ? (
-                  <strong className="text-danger">{formik.errors.description}</strong>
-                ) : null}
+                {formik.touched.description && formik.errors.description && (
+                  <div className="text-danger small mt-1">{formik.errors.description}</div>
+                )}
               </div>
-            </div>
+
+              <button
+                type="submit"
+                className="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center gap-2"
+                disabled={formik.isSubmitting}
+              >
+                {formik.isSubmitting ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm" role="status"></span>
+                    Đang lưu danh mục...
+                  </>
+                ) : (
+                  <>
+                    <i className="fa-solid fa-folder-plus"></i> Khởi tạo danh mục
+                  </>
+                )}
+              </button>
+            </form>
           </div>
-          <button type="submit" className="btn btn-primary btn-lg rounded-0 mt-4 w-100" disabled={formik.isSubmitting}>
-            Thêm danh mục
-          </button>
         </div>
-      </form>
-    </>
+      </div>
+    </div>
   );
 }

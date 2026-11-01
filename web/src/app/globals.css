@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --color-stone-50: #FAF8F5;
+  --color-stone-100: #F3EFEA;
+  --color-stone-200: #E7E0D6;
+  --color-stone-300: #D3C7B7;
+  --color-stone-600: #786C5E;
+  --color-stone-900: #29241E;
+
+  --color-brand-sage: #5B7065;
+  --color-brand-sage-light: #EBF0ED;
+  --color-brand-walnut: #5A4033;
+  --color-brand-terracotta: #B85D43;
+  --color-brand-terracotta-light: #F9EBE7;
+  --color-brand-sand: #F3EFEA;
+  --color-brand-dark: #29241E;
+
+  --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+:root {
+  --bg-page: #FAF8F5;
+  --bg-surface: #FFFFFF;
+  --bg-muted: #F3EFEA;
+  --text-main: #29241E;
+  --text-muted: #786C5E;
+  --border-subtle: #E7E0D6;
+  --border-strong: #D3C7B7;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Accessible focus outline */
+:focus-visible {
+  outline: 2px solid #5B7065;
+  outline-offset: 2px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

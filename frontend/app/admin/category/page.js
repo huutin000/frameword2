@@ -1,13 +1,15 @@
 "use client";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function Category() {
+export default function AdminCategoryPage() {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
 
-  const fetchCategory = async () => {
+  const fetchCategories = async () => {
+    setLoading(true);
     try {
       const supabase = createClient();
       const { data: categories, error } = await supabase
@@ -24,20 +26,22 @@ export default function Category() {
       setTotalProducts(count || 0);
     } catch (err) {
       console.error("Lỗi lấy danh mục:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCategory();
+    fetchCategories();
   }, []);
 
-  const deleteCategory = async (id) => {
-    if (confirm("Bạn có chắc chắn muốn xoá danh mục này không?")) {
+  const deleteCategory = async (id, name) => {
+    if (confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}" không?`)) {
       try {
         const supabase = createClient();
         const { error } = await supabase.from("categories").delete().eq("id", id);
         if (error) throw error;
-        fetchCategory();
+        setData((prev) => prev.filter((c) => (c.id || c._id) !== id));
       } catch (err) {
         alert("Lỗi khi xóa danh mục: " + err.message);
       }
@@ -45,84 +49,127 @@ export default function Category() {
   };
 
   return (
-    <>
-      <div className="d-flex justify-content-between">
-        <h3 className="mb-4">Danh mục sản phẩm</h3>
+    <div>
+      {/* Page Header */}
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
-          <Link href="/admin/category" className="btn btn-outline-success rounded-0 me-2">
-            Quản lý danh mục
+          <h1 className="h3 fw-bold text-dark mb-1">Quản lý Danh mục</h1>
+          <p className="text-muted small mb-0">
+            Quản lý nhóm phân loại thiết bị công nghệ (Điện thoại, Laptop, Tablet, Phụ kiện,...)
+          </p>
+        </div>
+        <div className="d-flex gap-2">
+          <Link href="/admin/product" className="btn btn-outline-secondary btn-sm fw-semibold">
+            <i className="fa-solid fa-box-archive me-1"></i> Xem sản phẩm
           </Link>
-          <Link href="/admin/category/add" className="btn btn-primary rounded-0">
-            Thêm danh mục
+          <Link href="/admin/category/add" className="btn btn-primary btn-sm fw-semibold">
+            <i className="fa-solid fa-plus me-1"></i> Thêm danh mục
           </Link>
         </div>
       </div>
-      <div className="row">
-        <div className="col-md-4 mb-4">
-          <div className="card border-0 rounded-0 bg-primary-subtle text-primary">
-            <div className="card-body text-end">
-              <div className="display-6 d-flex justify-content-between">
-                <i className="fal fa-box"></i>
-                {totalProducts}
-              </div>
-              TỔNG SẢN PHẨM
+
+      {/* Metric Cards */}
+      <div className="row g-3 mb-4">
+        <div className="col-sm-6 col-md-4">
+          <div className="admin-stat-card">
+            <div>
+              <div className="admin-stat-value">{data.length}</div>
+              <div className="admin-stat-label">Tổng danh mục</div>
+            </div>
+            <div className="admin-stat-icon bg-primary-subtle text-primary">
+              <i className="fa-solid fa-layer-group"></i>
             </div>
           </div>
         </div>
-        <div className="col-md-4 mb-4">
-          <div className="card border-0 rounded-0 bg-success-subtle text-success">
-            <div className="card-body text-end">
-              <div className="display-6 d-flex justify-content-between">
-                <i className="fal fa-boxes"></i>
-                {data.length}
-              </div>
-              DANH MỤC
+
+        <div className="col-sm-6 col-md-4">
+          <div className="admin-stat-card">
+            <div>
+              <div className="admin-stat-value">{totalProducts}</div>
+              <div className="admin-stat-label">Sản phẩm thuộc danh mục</div>
+            </div>
+            <div className="admin-stat-icon bg-success-subtle text-success">
+              <i className="fa-solid fa-boxes-stacked"></i>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="card rounded-0 border-0 shadow-sm">
-        <div className="card-body">
-          <table className="table text-center">
+      {/* Table Card */}
+      <div className="admin-table-card">
+        <div className="admin-table-header">
+          <span className="fw-bold text-dark">Danh sách phân loại ({data.length})</span>
+        </div>
+
+        <div className="table-responsive">
+          <table className="admin-table">
             <thead>
               <tr>
+                <th style={{ width: "100px" }}>Mã ID</th>
                 <th>Tên danh mục</th>
-                <th>Mô tả</th>
-                <th>Hành động</th>
+                <th>Ngày khởi tạo</th>
+                <th className="text-end" style={{ width: "120px" }}>Hành động</th>
               </tr>
             </thead>
-            <tbody className="align-middle">
-              {data.map((category) => {
-                const id = category.id || category._id;
-                return (
-                  <tr key={id}>
-                    <td className="text-start">
-                      <strong>{category.name}</strong>
-                    </td>
-                    <td>{category.description || "-"}</td>
-                    <td>
-                      <Link
-                        href={`/admin/category/update/${id}`}
-                        className="btn btn-outline-warning btn-sm me-2"
-                      >
-                        <i className="fas fa-pencil fa-fw"></i>
-                      </Link>
-                      <button
-                        type="button"
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => deleteCategory(id)}
-                      >
-                        <i className="fas fa-times fa-fw"></i>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="4" className="text-center py-4 text-muted">
+                    <div className="spinner-border spinner-border-sm text-primary me-2"></div>
+                    Đang nạp danh mục...
+                  </td>
+                </tr>
+              ) : data.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="text-center py-4 text-muted">
+                    Chưa có danh mục nào được khởi tạo.
+                  </td>
+                </tr>
+              ) : (
+                data.map((cat) => {
+                  const id = cat.id || cat._id;
+                  const dateStr = cat.created_at
+                    ? new Date(cat.created_at).toLocaleDateString("vi-VN")
+                    : "—";
+
+                  return (
+                    <tr key={id}>
+                      <td>
+                        <span className="badge bg-light text-muted border font-monospace">
+                          #{id}
+                        </span>
+                      </td>
+                      <td>
+                        <strong className="text-dark">{cat.name}</strong>
+                      </td>
+                      <td className="text-muted small">{dateStr}</td>
+                      <td className="text-end">
+                        <div className="d-flex justify-content-end gap-1">
+                          <Link
+                            href={`/admin/category/update/${id}`}
+                            className="btn btn-outline-primary btn-sm px-2 py-1"
+                            title="Chỉnh sửa danh mục"
+                          >
+                            <i className="fa-solid fa-pen-to-square"></i>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => deleteCategory(id, cat.name)}
+                            className="btn btn-outline-danger btn-sm px-2 py-1"
+                            title="Xóa danh mục"
+                          >
+                            <i className="fa-solid fa-trash-can"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
-    </>
+    </div>
   );
 }

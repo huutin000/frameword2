@@ -1,94 +1,135 @@
-export default function Cellphones({ children }) {
-  return (
-    <div className="content">
-      <section className="about-us">
-        <h1>Giới thiệu về chúng tôi</h1>
-        <p>
-          Chào mừng bạn đến với CellPhoneS. Chúng tôi là một cửa hàng điện thoại di động uy tín, chuyên cung cấp các sản
-          phẩm chính hãng, chất lượng cao với giá cả cạnh tranh. Đội ngũ nhân viên chuyên nghiệp và tận tâm của chúng
-          tôi luôn sẵn sàng tư vấn và hỗ trợ bạn lựa chọn được chiếc điện thoại phù hợp nhất với nhu cầu của mình.
-        </p>
+import Link from "next/link";
+import siteConfig from "@/lib/site-config";
 
-        <div className="video-container">
-          <iframe
-            width="560"
-            height="315"
-            src="https://www.youtube.com/embed/NNerzOwb8ew?si=djxhGuFDDqcAV4aJ"
-            title="YouTube video player"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-          ></iframe>
-        </div>
-        <h2 style={{ paddingBottom: "15px" }}>Tầm nhìn</h2>
-        <p>
-          Tầm nhìn của CellPhoneS là trở thành cửa hàng điện thoại di động uy tín hàng đầu tại Việt Nam, cung cấp cho
-          khách hàng những sản phẩm và dịch vụ tốt nhất với giá cả cạnh tranh.
+export const metadata = {
+  title: "Giới thiệu về KOVIQO",
+  description: "Khám phá câu chuyện thương hiệu, sứ mệnh và cam kết dịch vụ chuẩn quốc tế của hệ thống bán lẻ công nghệ KOVIQO.",
+};
+
+export default function AboutPage() {
+  return (
+    <div className="site-container py-5">
+      {/* 1. Header Banner */}
+      <section className="about-hero text-center mb-5">
+        <span className="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-bold mb-3">
+          VỀ CHÚNG TÔI
+        </span>
+        <h1 className="fw-black mb-3" style={{ fontSize: "2.5rem", color: "var(--text-primary)" }}>
+          KOVIQO — Định Hình Chuẩn Mực Bán Lẻ Công Nghệ 2026
+        </h1>
+        <p className="lead text-secondary mx-auto" style={{ maxWidth: "760px", fontSize: "1.1rem" }}>
+          Được xây dựng từ niềm đam mê đổi mới sáng tạo, KOVIQO tiên phong mang đến không gian trải nghiệm mua sắm thiết bị điện thoại, máy tính và phụ kiện thông minh chính hãng với tiêu chuẩn dịch vụ vượt trội.
         </p>
-        <ul>
-          <li>
-            Mở rộng thị phần: Chúng tôi sẽ không ngừng mở rộng mạng lưới cửa hàng trên toàn quốc để tiếp cận được nhiều
-            khách hàng hơn.
-          </li>
-          <li>
-            Nâng cao chất lượng sản phẩm và dịch vụ: Chúng tôi luôn cam kết cung cấp cho khách hàng những sản phẩm chính
-            hãng, chất lượng cao với giá cả cạnh tranh. Đồng thời, chúng tôi cũng sẽ không ngừng nâng cao chất lượng
-            dịch vụ khách hàng để mang đến cho khách hàng trải nghiệm mua sắm tốt nhất.
-          </li>
-          <li>
-            Đa dạng hóa sản phẩm và dịch vụ: Chúng tôi sẽ không ngừng đa dạng hóa sản phẩm và dịch vụ để đáp ứng mọi nhu
-            cầu của khách hàng. Ngoài điện thoại di động, chúng tôi còn cung cấp các phụ kiện điện thoại, dịch vụ sửa
-            chữa điện thoại, dịch vụ viễn thông,...
-          </li>
-          <li>
-            Phát triển đội ngũ nhân viên chuyên nghiệp: Chúng tôi sẽ đào tạo đội ngũ nhân viên chuyên nghiệp, có kiến
-            thức chuyên môn sâu về điện thoại di động để có thể tư vấn và hỗ trợ khách hàng tốt nhất.
-          </li>
-          <li>
-            Ứng dụng công nghệ: Chúng tôi sẽ ứng dụng công nghệ vào hoạt động kinh doanh để nâng cao hiệu quả và chất
-            lượng dịch vụ.
-          </li>
-        </ul>
-        <h2 style={{ paddingBottom: "15px" }}>Sứ mệnh</h2>
-        <p>
-          Sứ mệnh của CellPhoneS là mang đến cho khách hàng những sản phẩm điện thoại di động chính hãng, chất lượng cao
-          với giá cả cạnh tranh và dịch vụ khách hàng chu đáo, tận tâm.
-        </p>
-        <h2 style={{ paddingBottom: "15px" }}>Giá trị cốt lõi</h2>
-        <p>
-          Giá trị cốt lõi là những nguyên tắc cơ bản mà cửa hàng điện thoại di động của bạn sẽ luôn tuân thủ trong mọi
-          hoạt động kinh doanh. Giá trị cốt lõi giúp định hướng văn hóa doanh nghiệp và tạo dựng niềm tin với khách
-          hàng.
-        </p>
-        <ul>
-          <li>
-            Khách hàng: Chúng tôi luôn đặt khách hàng lên hàng đầu, luôn lắng nghe và đáp ứng mọi nhu cầu của khách
-            hàng.
-          </li>
-          <li>
-            Trung thực: Chúng tôi luôn trung thực trong mọi hoạt động kinh doanh, cam kết cung cấp cho khách hàng những
-            sản phẩm và dịch vụ chất lượng cao với giá cả cạnh tranh.
-          </li>
-          <li>
-            Trách nhiệm: Chúng tôi luôn chịu trách nhiệm cho mọi hành động của mình, cam kết hoàn thành mọi cam kết với
-            khách hàng.
-          </li>
-          <li>Chuyên nghiệp: Chúng tôi luôn cung cấp cho khách hàng những sản phẩm và dịch vụ chuyên nghiệp nhất.</li>
-          <li>
-            Đổi mới: Chúng tôi luôn không ngừng đổi mới để mang đến cho khách hàng những sản phẩm và dịch vụ tốt nhất.
-          </li>
-          <li>
-            Làm việc nhóm: Chúng tôi luôn đề cao tinh thần làm việc nhóm, khuyến khích sự hợp tác và hỗ trợ lẫn nhau
-            giữa các nhân viên.
-          </li>
-          <li>
-            Cống hiến: Chúng tôi luôn cống hiến hết mình cho công việc, luôn nỗ lực để đạt được mục tiêu chung của công
-            ty.
-          </li>
-        </ul>
       </section>
-      {children}
+
+      {/* 2. Grid Highlights */}
+      <div className="row g-4 mb-5">
+        <div className="col-md-4">
+          <div className="card h-100 p-4 border rounded-4 shadow-xs text-center">
+            <div className="rounded-circle bg-primary-subtle text-primary mx-auto d-flex align-items-center justify-content-center mb-3" style={{ width: "64px", height: "64px" }}>
+              <i className="fa-solid fa-bullseye fs-3"></i>
+            </div>
+            <h4 className="fw-bold mb-2">Tầm Nhìn 2030</h4>
+            <p className="text-secondary small mb-0">
+              Trở thành chuỗi bán lẻ công nghệ số 1 tại Việt Nam về chỉ số hài lòng khách hàng, kết hợp trải nghiệm mua sắm đa kênh (Omnichannel) mượt mà và hiện đại.
+            </p>
+          </div>
+        </div>
+
+        <div className="col-md-4">
+          <div className="card h-100 p-4 border rounded-4 shadow-xs text-center">
+            <div className="rounded-circle bg-success-subtle text-success mx-auto d-flex align-items-center justify-content-center mb-3" style={{ width: "64px", height: "64px" }}>
+              <i className="fa-solid fa-hand-holding-heart fs-3"></i>
+            </div>
+            <h4 className="fw-bold mb-2">Sứ Mệnh Phục Vụ</h4>
+            <p className="text-secondary small mb-0">
+              Đồng hành cùng người dùng Việt tiếp cận những phát minh công nghệ đỉnh cao sớm nhất, với mức giá hợp lý, chính sách bảo hành minh bạch và tư vấn trung thực.
+            </p>
+          </div>
+        </div>
+
+        <div className="col-md-4">
+          <div className="card h-100 p-4 border rounded-4 shadow-xs text-center">
+            <div className="rounded-circle bg-warning-subtle text-warning mx-auto d-flex align-items-center justify-content-center mb-3" style={{ width: "64px", height: "64px" }}>
+              <i className="fa-solid fa-gem fs-3"></i>
+            </div>
+            <h4 className="fw-bold mb-2">Giá Trị Cốt Lõi</h4>
+            <p className="text-secondary small mb-0">
+              <strong>Tận tâm — Minh bạch — Sáng tạo — Trách nhiệm</strong>. Mọi cam kết với khách hàng đều được thực hiện trọn vẹn và không thỏa hiệp với chất lượng.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Detailed Commitments */}
+      <section className="p-4 p-md-5 rounded-4 bg-light border mb-5">
+        <h2 className="fw-bold mb-4 text-center">Cam Kết Vàng Từ Hệ Thống KOVIQO</h2>
+        <div className="row g-4">
+          <div className="col-md-6">
+            <div className="d-flex gap-3">
+              <i className="fa-solid fa-shield-check text-primary fs-3 mt-1"></i>
+              <div>
+                <h5 className="fw-bold mb-1">100% Sản Phẩm Nguồn Gốc Chính Hãng</h5>
+                <p className="text-secondary small">
+                  Tất cả các dòng điện thoại, máy tính bảng, laptop và phụ kiện đều có đầy đủ tem phụ, chứng từ nhập khẩu và hóa đơn VAT điện tử.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="d-flex gap-3">
+              <i className="fa-solid fa-bolt-lightning text-primary fs-3 mt-1"></i>
+              <div>
+                <h5 className="fw-bold mb-1">Giao Hàng Siêu Tốc 2 Giờ</h5>
+                <p className="text-secondary small">
+                  Đội ngũ giao nhận chuyên nghiệp cam kết chuyển sản phẩm tận tay khách hàng trong vòng 2 giờ tại các khu vực trung tâm.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="d-flex gap-3">
+              <i className="fa-solid fa-rotate-left text-primary fs-3 mt-1"></i>
+              <div>
+                <h5 className="fw-bold mb-1">Chính Sách 1 Đổi 1 Trong 30 Ngày</h5>
+                <p className="text-secondary small">
+                  Khách hàng hoàn toàn yên tâm sử dụng với chính sách đổi mới ngay lập tức sản phẩm nguyên hộp nếu phát sinh bất kỳ lỗi kỹ thuật nào từ nhà sản xuất.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="d-flex gap-3">
+              <i className="fa-solid fa-headset text-primary fs-3 mt-1"></i>
+              <div>
+                <h5 className="fw-bold mb-1">Hỗ Trợ Kỹ Thuật Trọn Đời Vòng Đời</h5>
+                <p className="text-secondary small">
+                  Đội ngũ chuyên viên kỹ thuật chứng chỉ chính hãng luôn sẵn sàng hỗ trợ cài đặt, chuyển dữ liệu và xử lý sự cố miễn phí.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. CTA */}
+      <section className="text-center py-4">
+        <h3 className="fw-bold mb-3">Sẵn Sàng Trải Nghiệm Mua Sắm Tại KOVIQO?</h3>
+        <p className="text-secondary mb-4">
+          Khám phá bộ sưu tập sản phẩm công nghệ thế hệ mới nhất với các chương trình khuyến mãi độc quyền hôm nay.
+        </p>
+        <div className="d-flex justify-content-center gap-3">
+          <Link href="/product" className="btn btn-primary px-4 py-2 rounded-3 fw-bold">
+            Xem Ngay Sản Phẩm
+          </Link>
+          <Link href="/contact" className="btn btn-outline-secondary px-4 py-2 rounded-3 fw-semibold">
+            Liên Hệ Chúng Tôi
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

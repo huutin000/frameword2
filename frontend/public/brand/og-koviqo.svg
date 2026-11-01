@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" fill="none">
+  <defs>
+    <radialGradient id="og-bg-glow" cx="600" cy="315" r="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0B0F19" />
+    </radialGradient>
+    <linearGradient id="og-accent-grad" x1="0" y1="0" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="50%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#6366F1" />
+    </linearGradient>
+    <linearGradient id="og-stem-grad" x1="20" y1="20" x2="80" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60A5FA" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+  </defs>
+
+  <!-- Deep Obsidian Background -->
+  <rect width="1200" height="630" fill="url(#og-bg-glow)" />
+
+  <!-- Top Accent Color Bar -->
+  <rect x="0" y="0" width="1200" height="6" fill="url(#og-accent-grad)" />
+
+  <!-- Background Subtle Grid Pattern -->
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="100" y1="0" x2="100" y2="630" />
+    <line x1="300" y1="0" x2="300" y2="630" />
+    <line x1="500" y1="0" x2="500" y2="630" />
+    <line x1="700" y1="0" x2="700" y2="630" />
+    <line x1="900" y1="0" x2="900" y2="630" />
+    <line x1="1100" y1="0" x2="1100" y2="630" />
+    <line x1="0" y1="150" x2="1200" y2="150" />
+    <line x1="0" y1="315" x2="1200" y2="315" />
+    <line x1="0" y1="480" x2="1200" y2="480" />
+  </g>
+
+  <!-- Brand Monogram Box (140x140) -->
+  <g transform="translate(120, 140)">
+    <rect width="140" height="140" rx="36" fill="#111827" stroke="rgba(255,255,255,0.12)" stroke-width="2" />
+    <!-- Monogram K inside -->
+    <rect x="28" y="28" width="22" height="84" rx="11" fill="url(#og-stem-grad)" />
+    <path d="M58 70L98 34C102 30 108 33 108 38V48C108 51 106 54 104 56L75 80L58 70Z" fill="#38BDF8" />
+    <path d="M60 76L102 113C104 115 106 118 106 121V122C106 128 100 131 96 127L58 92L60 76Z" fill="#2563EB" />
+    <circle cx="62" cy="78" r="5" fill="#BAE6FD" />
+  </g>
+
+  <!-- Title & Brand Text -->
+  <text x="290" y="210" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="900" letter-spacing="4" fill="#FFFFFF">
+    KOVIQO
+  </text>
+  <text x="295" y="255" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="600" letter-spacing="2" fill="#38BDF8">
+    PREMIUM CONSUMER ELECTRONICS RETAIL &bull; 2026
+  </text>
+
+  <!-- Main Headline -->
+  <text x="120" y="380" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="800" fill="#F8FAFC" letter-spacing="-0.5">
+    Đỉnh Cao Công Nghệ, Trải Nghiệm Khác Biệt
+  </text>
+
+  <!-- Tagline / Value Proposition -->
+  <text x="120" y="435" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="400" fill="#94A3B8">
+    Hệ thống bán lẻ điện thoại, laptop &amp; thiết bị thông minh chính hãng 100%. Giao nhanh 2h.
+  </text>
+
+  <!-- Bottom Badges / Trust Pillars -->
+  <g transform="translate(120, 500)">
+    <rect width="210" height="44" rx="22" fill="#1F2937" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+    <text x="105" y="28" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#E2E8F0" text-anchor="middle">
+      ✓ 100% Chính Hãng
+    </text>
+
+    <g transform="translate(230, 0)">
+      <rect width="210" height="44" rx="22" fill="#1F2937" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="105" y="28" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#E2E8F0" text-anchor="middle">
+        ⚡ Giao Nhanh 2H
+      </text>
+    </g>
+
+    <g transform="translate(460, 0)">
+      <rect width="210" height="44" rx="22" fill="#1F2937" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="105" y="28" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#E2E8F0" text-anchor="middle">
+        ↺ 1 Đổi 1 Trong 30 Ngày
+      </text>
+    </g>
+
+    <g transform="translate(690, 0)">
+      <rect width="210" height="44" rx="22" fill="#1F2937" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="105" y="28" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#E2E8F0" text-anchor="middle">
+        % Trả Góp 0% Lãi Suất
+      </text>
+    </g>
+  </g>
+</svg>
+

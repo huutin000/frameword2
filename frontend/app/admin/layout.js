@@ -1,139 +1,94 @@
 import "@/public/style/globals.css";
 import "@/public/bootstrap/css/bootstrap.min.css";
-import "@/public/bootstrap/css/style.css";
-import "@/public/bootstrap/css/fontawesome.css";
 import Leftbar from "./Leftbar";
 import Link from "next/link";
 import Script from "next/script";
 
 export const metadata = {
-  title: "Admin CellPhoneS",
-  description: "Chào mừng đến với trang Admin CellPhoneS.",
+  title: "NEXUS Admin — Hệ thống quản trị NEXUSTECH",
+  description: "Bảng điều khiển quản trị sản phẩm, danh mục và đơn hàng.",
 };
 
-export default function RootLayout({ children }) {
+export default function AdminLayout({ children }) {
   return (
-    <html lang="en">
-      <body style={{ background: "#eff8ff" }}>
-        <div className="d-flex min-vh-100">
-          <div
-            className="d-flex flex-column flex-shrink-0 p-3 text-bg-primary"
-            style={{ maxWidth: 280 + "px" }}
-            data-bs-theme="dark"
-          >
-            <Link
-              href="/admin"
-              className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none justify-content-center"
-            >
-              <img src="/asset/image/logo.svg" alt="" />
-              <span className="fs-4 d-none d-sm-inline-block">ADMIN CELLPHONES</span>
-            </Link>
-            <hr />
-            <Leftbar />
-          </div>
-          <div className="w-100">
-            <nav className="navbar navbar-expand-md text-bg-primary" data-bs-theme="dark">
-              <div className="container-fluid ps-0">
-                <div className="d-flex justify-content-between w-100">
-                  <form className="d-flex w-100" role="search" data-bs-theme="light">
-                    <div className="input-group">
-                      <button type="submit" className="btn btn-primary rounded-0 border-white">
-                        <i className="far fa-search"></i>
-                      </button>
-                      <input className="form-control me-2 rounded-0 border-white" type="search" placeholder="Search" />
-                    </div>
-                  </form>
-                  <button
-                    className="navbar-toggler"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
-                  >
-                    <span className="navbar-toggler-icon"></span>
-                  </button>
-                </div>
-                <div className="collapse navbar-collapse w-100" id="navbarSupportedContent">
-                  <ul className="navbar-nav ms-auto" data-bs-theme="light">
-                    <li className="nav-item dropdown">
-                      <Link
-                        className="nav-link dropdown-toggle"
-                        href="#"
-                        role="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        <strong>
-                          <i className="fas fa-bell"></i>
-                        </strong>
-                      </Link>
-                      <ul className="dropdown-menu rounded-0 dropdown-menu-md-end">
-                        <li>
-                          <Link className="dropdown-item" href="#">
-                            Profile
-                          </Link>
-                        </li>
-                        <li>
-                          <Link className="dropdown-item" href="#">
-                            Settings action
-                          </Link>
-                        </li>
-                        <li>
-                          <hr className="dropdown-divider" />
-                        </li>
-                        <li>
-                          <Link className="dropdown-item" href="#">
-                            Sign out
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                    <li className="nav-item dropdown">
-                      <Link
-                        className="nav-link dropdown-toggle"
-                        href="#"
-                        role="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        <img
-                          src="https://github.com/mdo.png"
-                          alt=""
-                          width="32"
-                          height="32"
-                          className="rounded-circle me-2"
-                        />
-                        <strong>Hữu Tín</strong>
-                      </Link>
-                      <ul className="dropdown-menu rounded-0 dropdown-menu-md-end">
-                        <li>
-                          <Link className="dropdown-item" href="/admin/login">
-                            Login
-                          </Link>
-                        </li>
-                        <li>
-                          <Link className="dropdown-item" href="#">
-                            Settings action
-                          </Link>
-                        </li>
-                        <li>
-                          <hr className="dropdown-divider" />
-                        </li>
-                        <li>
-                          <Link className="dropdown-item" href="#">
-                            Sign out
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>
-                </div>
+    <html lang="vi">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+          crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
+        />
+      </head>
+      <body>
+        <div className="admin-shell">
+          {/* Sidebar */}
+          <aside className="admin-sidebar">
+            <div className="admin-sidebar-header">
+              <div className="admin-brand-icon">
+                <i className="fa-solid fa-bolt-lightning"></i>
               </div>
-            </nav>
+              <div>
+                <div className="admin-brand-title">NEXUS<strong>ADMIN</strong></div>
+                <div className="admin-brand-subtitle">Console v2.6</div>
+              </div>
+            </div>
 
-            <div className="container-fluid p-4">{children}</div>
+            <Leftbar />
+
+            <div className="p-3 border-top border-secondary border-opacity-25 mt-auto">
+              <div className="d-flex align-items-center justify-content-between text-muted small">
+                <span>Database:</span>
+                <span className="badge bg-success-subtle text-success">
+                  <i className="fa-solid fa-circle me-1" style={{ fontSize: "6px" }}></i>Online
+                </span>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Area */}
+          <div className="admin-content-area">
+            {/* Topbar */}
+            <header className="admin-topbar">
+              <div className="admin-search-wrapper">
+                <i className="fa-solid fa-magnifying-glass"></i>
+                <input
+                  type="search"
+                  placeholder="Tìm nhanh sản phẩm, danh mục..."
+                  className="admin-search-input"
+                />
+              </div>
+
+              <div className="d-flex align-items-center gap-3">
+                <Link
+                  href="/"
+                  target="_blank"
+                  className="btn btn-outline-secondary btn-sm fw-semibold d-flex align-items-center gap-2"
+                >
+                  <i className="fa-solid fa-arrow-up-right-from-square"></i>
+                  <span>Xem Storefront</span>
+                </Link>
+
+                <div className="admin-user-pill">
+                  <div className="admin-avatar">AD</div>
+                  <span className="d-none d-md-inline">Quản trị viên</span>
+                </div>
+
+                <Link
+                  href="/admin/login"
+                  className="btn btn-outline-danger btn-sm"
+                  title="Đăng xuất khỏi phiên quản trị"
+                >
+                  <i className="fa-solid fa-arrow-right-from-bracket"></i>
+                </Link>
+              </div>
+            </header>
+
+            {/* Canvas */}
+            <main className="admin-page-container">
+              {children}
+            </main>
           </div>
         </div>
         <Script src="/bootstrap/js/bootstrap.bundle.min.js" strategy="afterInteractive" />

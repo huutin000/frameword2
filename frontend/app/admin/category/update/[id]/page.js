@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
@@ -12,7 +12,7 @@ export default function EditCategory({ params }) {
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm();
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -34,7 +34,7 @@ export default function EditCategory({ params }) {
         }
       } catch (err) {
         console.error("Lỗi khi tải thông tin danh mục:", err);
-        setErrorMessage("Không tìm thấy danh mục hoặc có lỗi xảy ra.");
+        setErrorMessage("Không tìm thấy thông tin danh mục yêu cầu.");
       } finally {
         setLoading(false);
       }
@@ -67,49 +67,78 @@ export default function EditCategory({ params }) {
 
   if (loading) {
     return (
-      <div className="container py-4">
-        <p>Đang tải thông tin danh mục...</p>
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary mb-2"></div>
+        <p className="text-muted small">Đang nạp thông tin danh mục #{id}...</p>
       </div>
     );
   }
 
   return (
-    <div className="m-3">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Chỉnh sửa danh mục</h2>
-        <Link href="/admin/category" className="btn btn-outline-secondary rounded-0">
-          <i className="far fa-long-arrow-left"></i> Quay lại
-        </Link>
+    <div>
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+          <h1 className="h3 fw-bold text-dark mb-1">Chỉnh sửa danh mục</h1>
+          <p className="text-muted small mb-0">Cập nhật tên gọi và mô tả nhóm danh mục #{id}</p>
+        </div>
+        <div>
+          <Link href="/admin/category" className="btn btn-outline-secondary btn-sm fw-semibold">
+            <i className="fa-solid fa-arrow-left me-1"></i> Quay lại danh mục
+          </Link>
+        </div>
       </div>
 
-      {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="form-group my-2">
-          <label className="form-label">Tên danh mục *</label>
-          <input
-            type="text"
-            className="form-control"
-            {...register("name", { required: "Tên danh mục là bắt buộc" })}
-          />
-          {errors.name && <div className="text-danger">{errors.name.message}</div>}
+      {errorMessage && (
+        <div className="alert alert-danger py-2 px-3 small rounded-3 mb-4">
+          <i className="fa-solid fa-circle-exclamation me-1"></i> {errorMessage}
         </div>
+      )}
 
-        <div className="form-group my-2">
-          <label className="form-label">Mô tả</label>
-          <textarea
-            className="form-control"
-            rows="5"
-            {...register("description")}
-          />
-          {errors.description && <div className="text-danger">{errors.description.message}</div>}
+      <div className="row">
+        <div className="col-lg-7">
+          <div className="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <div className="mb-3">
+                <label className="auth-label">
+                  Tên danh mục <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  className={`form-control ${errors.name ? "is-invalid" : ""}`}
+                  {...register("name", { required: "Tên danh mục là bắt buộc" })}
+                />
+                {errors.name && <div className="text-danger small mt-1">{errors.name.message}</div>}
+              </div>
+
+              <div className="mb-4">
+                <label className="auth-label">Mô tả danh mục</label>
+                <textarea
+                  className="form-control"
+                  rows="5"
+                  {...register("description")}
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm d-flex align-items-center justify-content-center gap-2"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm" role="status"></span>
+                    Đang lưu thay đổi...
+                  </>
+                ) : (
+                  <>
+                    <i className="fa-solid fa-floppy-disk"></i> Cập nhật danh mục
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         </div>
-
-        <button type="submit" className="btn btn-primary my-3">
-          Cập nhật danh mục
-        </button>
-      </form>
+      </div>
     </div>
   );
 }
-
