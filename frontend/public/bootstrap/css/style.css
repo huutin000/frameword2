@@ -1,4 +1,0 @@
-[data-bs-theme="dark"] .nav-pills .nav-link.active,[data-bs-theme="dark"] .nav-pills .show>.nav-link{
-  background-color: var(--bs-white);
-  color: var(--bs-primary);
-}

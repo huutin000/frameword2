@@ -1,4 +1,4 @@
-import { chromium } from "file:///D:/Project/Shop-Ecommerce/frontend/node_modules/@playwright/test/index.mjs";
+import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
 

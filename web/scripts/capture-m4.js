@@ -1,4 +1,4 @@
-const { chromium } = require('D:/Project/Shop-Ecommerce/frontend/node_modules/playwright');
+const { chromium } = require('playwright');
 const path = require('path');
 
 const ARTIFACT_DIR = 'C:/Users/huuti/.gemini/antigravity/brain/395a8058-8e27-4416-8292-54aef9e4f05e';
