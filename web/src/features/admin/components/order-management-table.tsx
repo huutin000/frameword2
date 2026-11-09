@@ -167,7 +167,11 @@ export function OrderManagementTable({ initialOrders }: OrderManagementTableProp
                           o.paymentStatus === "paid" ? "text-[#5B7065]" : "text-[#786C5E]"
                         }`}
                       >
-                        {o.paymentStatus === "paid" ? "Đã thanh toán" : "Thu hộ khi giao"}
+                        {o.paymentStatus === "paid"
+                          ? "Đã thanh toán"
+                          : o.paymentMethod === "cod"
+                          ? "Thu hộ khi giao"
+                          : "Chờ thanh toán"}
                       </span>
                     </td>
 

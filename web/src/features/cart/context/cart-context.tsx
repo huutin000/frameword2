@@ -10,6 +10,8 @@ import React, {
 } from "react";
 import type { CartItem, CartSummary, PromoCodeDiscount } from "../types";
 import type { CatalogProduct } from "@/features/catalog/types";
+import { clampCartQuantity } from "../utils/quantity";
+import { addCartLine, sanitizeCartItems } from "../utils/cart-lines";
 
 interface CartContextValue {
   items: CartItem[];
@@ -17,7 +19,7 @@ interface CartContextValue {
   summary: CartSummary;
   promoCode: PromoCodeDiscount | null;
   promoError: string | null;
-  addItem: (product: CatalogProduct, quantity?: number) => void;
+  addItem: (product: CatalogProduct, quantity?: number) => number;
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -43,8 +45,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       const stored = window.localStorage.getItem(CART_STORAGE_KEY);
       if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) return parsed;
+        return sanitizeCartItems(JSON.parse(stored));
       }
     } catch {
       // Fallback
@@ -96,34 +97,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items, promoCode]);
 
   // 4. Cart Operations
-  const addItem = (product: CatalogProduct, quantity = 1) => {
-    setItems((prev) => {
-      const existing = prev.find((i) => i.productId === product.id);
-      if (existing) {
-        return prev.map((i) =>
-          i.productId === product.id
-            ? { ...i, quantity: i.quantity + quantity }
-            : i
-        );
-      }
-      const newItem: CartItem = {
-        id: `cart-${product.id}`,
-        productId: product.id,
-        sku: product.slug.toUpperCase(),
-        title: product.title,
-        category: product.category,
-        dimensions: product.dimensions,
-        widthMm: product.widthMm,
-        heightMm: product.heightMm,
-        depthMm: product.depthMm,
-        noDrill: product.noDrill,
-        priceVnd: product.priceVnd,
-        imageUrl: product.imageUrl,
-        quantity,
-        maxStock: 25,
-      };
-      return [...prev, newItem];
-    });
+  // Returns the units really added (after the per-line cap). It is computed from the
+  // current render's snapshot; two adds in the same frame may report a stale value
+  // for the second call, while the cart state itself stays correct.
+  const addItem = (product: CatalogProduct, quantity = 1): number => {
+    const { added } = addCartLine(items, product, quantity);
+    setItems((prev) => addCartLine(prev, product, quantity).items);
+    return added;
   };
 
   const updateQuantity = (itemId: string, quantity: number) => {
@@ -132,7 +112,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     setItems((prev) =>
-      prev.map((i) => (i.id === itemId ? { ...i, quantity } : i))
+      prev.map((i) =>
+        i.id === itemId ? { ...i, quantity: clampCartQuantity(quantity) } : i
+      )
     );
   };
 

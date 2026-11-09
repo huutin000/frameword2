@@ -301,6 +301,7 @@ export function StorefrontHeader() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-1.5 sm:p-2 text-[#29241E] hover:bg-[#F3EFEA] rounded-md cursor-pointer"
             aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
               <X className="w-6 h-6" />

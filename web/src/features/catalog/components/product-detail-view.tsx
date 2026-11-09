@@ -24,6 +24,7 @@ import type { CatalogProduct } from "../types";
 import { formatVND } from "@/lib/formatters/currency";
 import { calculateAreaM2 } from "@/lib/formatters/dimensions";
 import { useCart } from "@/features/cart/context/cart-context";
+import { MAX_CART_ITEM_QUANTITY } from "@/features/cart/utils/quantity";
 import { useWishlist } from "@/features/wishlist/context/wishlist-context";
 import { useCompare } from "@/features/compare/context/compare-context";
 import { SpaceFitCard } from "@/features/spacefit/components/spacefit-card";
@@ -51,7 +52,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
   const { isInCompare, addToCompare, removeFromCompare } = useCompare();
   const [selectedVariant, setSelectedVariant] = useState(DEFAULT_VARIANTS[0]);
   const [quantity, setQuantity] = useState(1);
-  const [addedToast, setAddedToast] = useState(false);
+  const [addedToast, setAddedToast] = useState<{ added: number; requested: number } | null>(null);
   const [is3DModalOpen, setIs3DModalOpen] = useState(false);
   const [selectedImageOverride, setSelectedImageOverride] = useState<string | null>(null);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
@@ -76,7 +77,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
   }, [product.id]);
 
   const handleAddToCart = () => {
-    addItem(
+    const added = addItem(
       {
         ...product,
         priceVnd: finalUnitPrice,
@@ -84,8 +85,8 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
       },
       quantity
     );
-    setAddedToast(true);
-    setTimeout(() => setAddedToast(false), 2500);
+    setAddedToast({ added, requested: quantity });
+    setTimeout(() => setAddedToast(null), 2500);
   };
 
   const handleBuyNow = () => {
@@ -366,9 +367,21 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                   {quantity}
                 </span>
                 <button
-                  onClick={() => setQuantity((q) => q + 1)}
-                  className="p-2.5 hover:bg-[#E7E0D6] text-[#5A4033] transition-colors"
-                  aria-label="Tăng"
+                  onClick={() =>
+                    setQuantity((q) => Math.min(MAX_CART_ITEM_QUANTITY, q + 1))
+                  }
+                  disabled={quantity >= MAX_CART_ITEM_QUANTITY}
+                  className="p-2.5 hover:bg-[#E7E0D6] text-[#5A4033] transition-colors disabled:opacity-40"
+                  aria-label={
+                    quantity >= MAX_CART_ITEM_QUANTITY
+                      ? `Đã đạt số lượng tối đa (${MAX_CART_ITEM_QUANTITY})`
+                      : "Tăng"
+                  }
+                  title={
+                    quantity >= MAX_CART_ITEM_QUANTITY
+                      ? `Đã đạt số lượng tối đa (${MAX_CART_ITEM_QUANTITY})`
+                      : undefined
+                  }
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -432,11 +445,17 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
             </div>
 
             {/* Added Toast */}
-            {addedToast && (
-              <div className="p-3 bg-[#EBF0ED] border border-[#C5D3CC] rounded-xl text-xs text-[#3E5247] flex items-center justify-between animate-in fade-in slide-in-from-top-1">
+            {addedToast !== null && (
+              <div role="status" aria-live="polite" className="p-3 bg-[#EBF0ED] border border-[#C5D3CC] rounded-xl text-xs text-[#3E5247] flex items-center justify-between animate-in fade-in slide-in-from-top-1">
                 <div className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-[#5B7065]" />
-                  <span>Đã thêm <strong>{quantity} sản phẩm</strong> vào giỏ hàng!</span>
+                  {addedToast.added === 0 ? (
+                    <span>Mặt hàng này đã đạt tối đa {MAX_CART_ITEM_QUANTITY} sản phẩm trong giỏ.</span>
+                  ) : addedToast.added < addedToast.requested ? (
+                    <span>Đã thêm <strong>{addedToast.added} sản phẩm</strong> vào giỏ hàng (tối đa {MAX_CART_ITEM_QUANTITY} sản phẩm/mặt hàng).</span>
+                  ) : (
+                    <span>Đã thêm <strong>{addedToast.added} sản phẩm</strong> vào giỏ hàng!</span>
+                  )}
                 </div>
                 <Link href="/cart" className="font-bold underline text-[#5B7065] hover:text-[#4A5D53]">
                   Xem giỏ

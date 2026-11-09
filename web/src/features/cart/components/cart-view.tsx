@@ -17,6 +17,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useCart } from "../context/cart-context";
+import { MAX_CART_ITEM_QUANTITY } from "../utils/quantity";
 import { formatVND } from "@/lib/formatters/currency";
 import { Button } from "@/components/ui/button";
 
@@ -188,8 +189,18 @@ export function CartView() {
                   </span>
                   <button
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    className="p-1.5 hover:bg-[#E7E0D6] text-[#5A4033] transition-colors"
-                    aria-label="Tăng số lượng"
+                    disabled={item.quantity >= MAX_CART_ITEM_QUANTITY}
+                    className="p-1.5 hover:bg-[#E7E0D6] text-[#5A4033] transition-colors disabled:opacity-40"
+                    aria-label={
+                      item.quantity >= MAX_CART_ITEM_QUANTITY
+                        ? `Đã đạt số lượng tối đa (${MAX_CART_ITEM_QUANTITY})`
+                        : "Tăng số lượng"
+                    }
+                    title={
+                      item.quantity >= MAX_CART_ITEM_QUANTITY
+                        ? `Đã đạt số lượng tối đa (${MAX_CART_ITEM_QUANTITY})`
+                        : undefined
+                    }
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>

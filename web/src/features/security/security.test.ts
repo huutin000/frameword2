@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { processDemoCheckout, type CheckoutInput } from "@/features/cart/actions/checkout-order";
-import { resetOrderRegistryToSeed, getOrderById } from "@/features/orders/data/order-store";
+import {
+  resetOrderRegistryToSeed,
+  getOrderById,
+  getAllOrders,
+  getOrderByIdempotencyKey,
+} from "@/features/orders/data/order-store";
 import { sanitizeReviewText } from "@/features/catalog/data/review-store";
 import { getCurrentUser, loginCustomer } from "@/features/auth/data/auth-store";
 
@@ -96,5 +101,78 @@ describe("Security Invariants & Negative Test Suite (E001, E002, E003, B005)", (
       expect(clean).not.toContain("<img");
       expect(clean).not.toContain("<svg");
     }
+  });
+});
+
+describe("Checkout per-line quantity cap (max 25)", () => {
+  const CAP_MESSAGE = "Mỗi sản phẩm chỉ được đặt tối đa 25 cái";
+  let seq = 0;
+
+  const buildPayload = (items: unknown[], tag: string) =>
+    ({
+      customerName: "qa-auto-Nguyen Van A",
+      customerPhone: "0912345678",
+      shippingAddress: "qa-auto-123 Duong Test, Quan 1, TP HCM",
+      paymentMethod: "cod" as const,
+      idempotencyKey: `qa-auto-idem-${tag}-${++seq}-${Date.now()}`,
+      items,
+    }) as unknown as CheckoutInput;
+
+  beforeEach(() => {
+    resetOrderRegistryToSeed();
+  });
+
+  it.each([24, 25])("accepts quantity %i and stores it on the order", async (qty) => {
+    const payload = buildPayload([{ productId: "p1", quantity: qty }], `ok${qty}`);
+    const result = await processDemoCheckout(payload);
+    expect(result.success).toBe(true);
+    const order = getOrderById(result.orderId!);
+    expect(order?.items[0].quantity).toBe(qty);
+    expect(order?.subtotalVnd).toBe(680000 * qty);
+  });
+
+  it.each([26, 1000])("rejects quantity %i with the cap message and creates no order", async (qty) => {
+    const before = getAllOrders().length;
+    const payload = buildPayload([{ productId: "p1", quantity: qty }], `cap${qty}`);
+    const result = await processDemoCheckout(payload);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain(CAP_MESSAGE);
+    expect(getAllOrders().length).toBe(before);
+    expect(getOrderByIdempotencyKey(payload.idempotencyKey)).toBeUndefined();
+  });
+
+  it.each([0, -1, 1.5, Number.NaN, "5", undefined])(
+    "rejects invalid quantity %j and creates no order",
+    async (qty) => {
+      const before = getAllOrders().length;
+      const payload = buildPayload([{ productId: "p1", quantity: qty }], "bad");
+      const result = await processDemoCheckout(payload);
+      expect(result.success).toBe(false);
+      expect(result.error).toBeTruthy();
+      expect(getAllOrders().length).toBe(before);
+      expect(getOrderByIdempotencyKey(payload.idempotencyKey)).toBeUndefined();
+    }
+  );
+
+  it("rejects 1.5 with the integer message and 0 with the positive message", async () => {
+    const frac = await processDemoCheckout(buildPayload([{ productId: "p1", quantity: 1.5 }], "frac"));
+    expect(frac.error).toContain("Số lượng sản phẩm phải là số nguyên");
+    const zero = await processDemoCheckout(buildPayload([{ productId: "p1", quantity: 0 }], "zero"));
+    expect(zero.error).toContain("Số lượng sản phẩm phải lớn hơn 0");
+  });
+
+  it("documents approved per-line-only cap: two lines of the same product at 25 each are accepted", async () => {
+    const payload = buildPayload(
+      [
+        { productId: "p1", quantity: 25 },
+        { productId: "p1", quantity: 25 },
+      ],
+      "dup"
+    );
+    const result = await processDemoCheckout(payload);
+    expect(result.success).toBe(true);
+    const order = getOrderById(result.orderId!);
+    expect(order?.items).toHaveLength(2);
+    expect(order?.items.map((i) => i.quantity)).toEqual([25, 25]);
   });
 });

@@ -16,6 +16,8 @@ import { useCart } from "../context/cart-context";
 import { formatVND } from "@/lib/formatters/currency";
 import { processDemoCheckout } from "../actions/checkout-order";
 import { Button } from "@/components/ui/button";
+import { VN_PHONE_REGEX } from "../utils/phone";
+import { CHECKOUT_GENERIC_ERROR } from "../utils/checkout-messages";
 import type { PaymentMethod } from "../types";
 
 export function CheckoutView() {
@@ -74,7 +76,7 @@ export function CheckoutView() {
       setErrorMessage("Vui lòng nhập họ và tên người nhận (ít nhất 2 ký tự)");
       return;
     }
-    if (!customerPhone.trim() || !/^(0|\+84)[3|5|7|8|9][0-9]{8}$/.test(customerPhone.trim())) {
+    if (!customerPhone.trim() || !VN_PHONE_REGEX.test(customerPhone.trim())) {
       setErrorMessage("Vui lòng nhập số điện thoại Việt Nam hợp lệ (VD: 0901234567)");
       return;
     }
@@ -109,12 +111,12 @@ export function CheckoutView() {
         clearCart();
         router.push(`/orders/${result.orderId}`);
       } else {
-        setErrorMessage(result.error || "Không thể xử lý đơn hàng. Vui lòng thử lại.");
+        setErrorMessage(result.error || CHECKOUT_GENERIC_ERROR);
         setIsSubmitting(false);
       }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Đã có lỗi xảy ra";
-      setErrorMessage(msg);
+    } catch {
+      // Never show raw thrown messages (e.g. "Failed to fetch") to the customer.
+      setErrorMessage(CHECKOUT_GENERIC_ERROR);
       setIsSubmitting(false);
     }
   };
@@ -141,7 +143,10 @@ export function CheckoutView() {
         <div className="mb-6 p-4 bg-[#FDF2F0] border border-[#F5C2BC] rounded-xl flex items-start gap-3 text-sm text-[#A05C52]">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <div>
-            <strong className="font-semibold">Lỗi xác thực:</strong> {errorMessage}
+            {errorMessage !== CHECKOUT_GENERIC_ERROR && (
+              <strong className="font-semibold">Lỗi xác thực: </strong>
+            )}
+            {errorMessage}
           </div>
         </div>
       )}

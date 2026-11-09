@@ -4,16 +4,21 @@ import { z } from "zod";
 import { SAMPLE_PRODUCTS } from "@/features/catalog/data/mock-products";
 import {
   saveNewOrder,
+  getOrderById,
   getOrderByIdempotencyKey,
 } from "@/features/orders/data/order-store";
+import { createOrderIdentifiers } from "@/features/orders/utils/order-code";
 import type { DemoOrderRecord, OrderItemRecord } from "@/features/orders/types";
 import type { CheckoutResult } from "../types";
+import { MAX_CART_ITEM_QUANTITY } from "../utils/quantity";
+import { VN_PHONE_REGEX } from "../utils/phone";
+import { CHECKOUT_GENERIC_ERROR } from "../utils/checkout-messages";
 
 const checkoutSchema = z.object({
   customerName: z.string().min(2, "Họ và tên người nhận phải có ít nhất 2 ký tự"),
   customerPhone: z
     .string()
-    .regex(/^(0|\+84)[3|5|7|8|9][0-9]{8}$/, "Số điện thoại không hợp lệ (VD: 0901234567)"),
+    .regex(VN_PHONE_REGEX, "Số điện thoại không hợp lệ (VD: 0901234567)"),
   customerEmail: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   shippingAddress: z.string().min(5, "Địa chỉ nhận hàng chi tiết ít nhất 5 ký tự"),
   notes: z.string().optional(),
@@ -24,7 +29,14 @@ const checkoutSchema = z.object({
     .array(
       z.object({
         productId: z.string(),
-        quantity: z.number().int().positive(),
+        quantity: z
+          .number()
+          .int("Số lượng sản phẩm phải là số nguyên")
+          .positive("Số lượng sản phẩm phải lớn hơn 0")
+          .max(
+            MAX_CART_ITEM_QUANTITY,
+            `Mỗi sản phẩm chỉ được đặt tối đa ${MAX_CART_ITEM_QUANTITY} cái`
+          ),
       })
     )
     .min(1, "Giỏ hàng phải có ít nhất 1 sản phẩm"),
@@ -108,9 +120,9 @@ export async function processDemoCheckout(input: CheckoutInput): Promise<Checkou
     const finalTotalVnd = calculatedSubtotalVnd - calculatedDiscountVnd + shippingVnd;
 
     // 6. Generate IDs
-    const timestampStr = Date.now().toString().slice(-6);
-    const orderCode = `SL-2026-${timestampStr}`;
-    const orderId = `ord-${orderCode.toLowerCase()}`;
+    const { orderCode, orderId } = createOrderIdentifiers(
+      (code, id) => !!getOrderById(code) || !!getOrderById(id)
+    );
 
     // Link items to orderId
     orderItems.forEach((i) => (i.orderId = orderId));
@@ -124,7 +136,8 @@ export async function processDemoCheckout(input: CheckoutInput): Promise<Checkou
       customerEmail: data.customerEmail?.trim() || undefined,
       shippingAddress: data.shippingAddress.trim(),
       paymentMethod: data.paymentMethod,
-      paymentStatus: data.paymentMethod === "cod" ? "pending" : "paid",
+      // No real payment integration: nothing is truly paid at creation (COD, VietQR, MoMo alike).
+      paymentStatus: "pending",
       orderStatus: "placed",
       subtotalVnd: calculatedSubtotalVnd,
       discountVnd: calculatedDiscountVnd,
@@ -163,8 +176,9 @@ export async function processDemoCheckout(input: CheckoutInput): Promise<Checkou
       totalVnd: newOrder.totalVnd,
     };
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Lỗi không xác định khi tạo đơn hàng";
-    return { success: false, error: message };
+    // Log the error only (never the customer's input); return a generic message to the client.
+    console.error("[checkout] unexpected failure", err);
+    return { success: false, error: CHECKOUT_GENERIC_ERROR };
   }
 }
 
